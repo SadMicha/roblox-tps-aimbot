@@ -10,6 +10,7 @@ getgenv().options = {
     fov_color = Color3.new(1, 1, 1),
     smoothness = 1,
     triggerbot = false,
+    max_distance = 1000,
 
     team_check = true,
     wall_check = true,
@@ -17,6 +18,17 @@ getgenv().options = {
     ui_toggle_key = "NONE",
     ui_visible = true
 }
+
+-- random
+math.randomseed(tick())
+local function random_string(len)
+	local str = ""
+	for i = 1, len do
+		str = str .. string.char(math.random(97, 122))
+	end
+	return str
+end
+getgenv().update_loop_stepped_name = random_string(math.random(15, 35))
 
 -- ui stuff
 local Bracket = loadstring(game:HttpGet("https://raw.githubusercontent.com/AlexR32/Bracket/main/BracketV32.lua"))()
@@ -40,6 +52,10 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
 
             SettingSection:Slider({Name = "Smoothness", Min = 0, Max = 10, Value = options.smoothness, Precise = 1, Unit = "", Callback = function(number)
                 options.smoothness = number
+            end})
+
+            SettingSection:Slider({Name = "Max Distance", Min = 0, Max = 10000, Value = options.max_distance, Precise = 10, Unit = "", Callback = function(number)
+                options.max_distance = number
             end})
 
             SettingSection:Toggle({Name = "Triggerbot", Value = options.triggerbot, Callback = function(bool)
@@ -76,6 +92,8 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
         end
     end
 
+    -- esp
+
     -- settings
     local Settings = Window:Tab({Name = "UI Settings"}) do
         Settings:Divider({Text = "Settings", Side = "Left"})
@@ -90,3 +108,172 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
     end
 end
 
+local playerService = game:GetService("Players")
+local local_player = playerService.LocalPlayer
+local camera = workspace.CurrentCamera
+local mouse = local_player:GetMouse()
+local run_service = game:GetService("RunService")
+
+local startAim = false
+
+local aiming = {
+    fov_circle_object = nil
+}
+
+local ignored_instances = {}
+local function can_hit(target)
+    local raycast_params = RaycastParams.new()
+    raycast_params.FilterType = Enum.RaycastFilterType.Blacklist
+    raycast_params.IgnoreWater = true
+
+    local ignore_list = {camera, local_player.Character}
+
+    for _, val in pairs(ignored_instances) do
+        ignore_list[#ignore_list + 1] = val
+    end
+
+    local raycast_result = raycast(workspace, local_player.Character.Head.Position, (target.Character.PrimaryPart.Position - local_player.Character.PrimaryPart.Position).Unit * 1000, raycast_params)
+    local result_part = ((raycast_result and raycast_result.Instance) or dummy_part)
+
+    raycast_params.FilterDescendantsInstances = ignore_list
+
+    if result_part ~= dummy_part then
+        if result_part.Transparency >= 0.3 then -- ignore low transparency
+            ignored_instances[#ignored_instances + 1] = result_part
+        end
+
+        if result_part.Material == Enum.Material.Glass then -- ignore glass
+            ignored_instances[#ignored_instances + 1] = result_part
+        end
+    end
+
+    return game.IsDescendantOf(result_part, target.Character)
+end
+
+local function check_same_team(target)
+    local placeId = game.PlaceId
+
+    if placeId == 5361853069 then -- Snow Core
+        local leaderboard = local_player:FindFirstChild("PlayerGui"):FindFirstChild("LeaderboardUI")
+        local leaderboardNew = leaderboard:FindFirstChild("LeaderboardNew")
+        local teamA = leaderboardNew:FindFirstChild("TeamAFrame"):FindFirstChild("TeamA"):FindFirstChild("PlayersList")
+        local teamB = leaderboardNew:FindFirstChild("TeamBFrame"):FindFirstChild("TeamB"):FindFirstChild("PlayersList")
+
+        local playerTeams = {}
+
+        for _, items in ipairs(teamA:GetChildren()) do
+            if items.Name == target.Name then
+                playerTeams[#playerTeams + 1] = target.Name
+            elseif items.Name == local_player.Name then
+                playerTeams[#playerTeams + 1] = local_player.Name
+            end
+        end
+
+        if #playerTeams >= 2 then
+            return true
+        else
+            playerTeams = {}
+            for _, items in ipairs(teamB:GetChildren()) do
+                if items.Name == target.Name then
+                    playerTeams[#playerTeams + 1] = target.Name
+                elseif items.Name == local_player.Name then
+                    playerTeams[#playerTeams + 1] = local_player.Name
+                end
+            end
+
+            if #playerTeams >= 2 then
+                return true
+            end
+        end
+    else
+        if target.Team == local_player.Team then
+            return true
+        end
+    end
+
+    return false
+end
+
+local function add_or_update_instance(table, child, properties)
+    local inst = table[child]
+    if not inst then
+        table[child] = Drawing.new(properties.instance)(properties)
+
+        return inst;
+    end
+
+    for idx, val in pairs(properties) do
+        if idx ~= "instance" then
+            inst[idx] = val
+        end
+    end
+
+    return inst
+end
+
+local function world_to_view_point(target)
+    local vector, inViewport = camera:WorldToViewportPoint(target.Character.PrimaryPart.Position)
+    if inViewport then
+        return Vector2.new(vector.X, vector.Y), (can_hit(target) and true or false)
+    end
+end
+
+local function is_in_fov(pos)
+    return ((pos.x - aiming.fov_circle_object.Position.X) ^ 2 + (pos.y - aiming.fov_circle_object.Position.Y) ^ 2 <= aiming.fov_circle_object.Radius ^ 2)
+end
+
+local function closest_player()
+    local closest = nil
+
+    for _, players in ipairs(playerService:GetPlayers()) do
+        if players == local_player then return end
+
+        if (mouse.Hit.Position - players.Character.PrimaryPart.Position).Magnitude <= options.max_distance and not check_same_team(players) then
+            if can_hit(players) and is_in_fov(players.Character.PrimaryPart.Position) and players.Character.Humanoid.Health > 0 then
+                closest = players
+            end
+        end
+    end
+
+    return closest
+end
+
+local function get_aim_part(target)
+    if mouse.Target then
+        if mouse.Target:FindFirstChild("Humanoid") or mouse.Target.Parent:FindFirstChild("Humanoid") then
+            local local_target = playerService:GetPlayerFromCharacter(mouse.Target.Parent)
+            if local_target and closest_player() == local_target and (mouse.Target:IsA("BasePart") or mouse.Target:IsA("Part")) then
+                return mouse.Target.Position
+            end
+        end
+    end
+
+    return target.Character.HumanoidRootPart.Position
+end
+
+local last_tick = tick()
+local function stepped()
+    if (tick() - last_tick) > (10 / 1000) then
+        last_tick = tick()
+
+        add_or_update_instance(aiming, "fov_circle_obj", {
+            Visible = options.fov_circle,
+            Thickness = 1,
+            Radius = options.fov,
+            Position = mouse.Origin.Position,
+            Color = options.fov_color,
+            instance = "Circle"
+        })
+
+        -- code
+        if options.aimbot and startAim then
+            local closest = closest_player()
+            local aim_part = get_aim_part(closest)
+            if aim_part and closest then
+                mousemoverel((aim_part.X - mouse.X) / options.smoothness, (aim_part.Y - (mouse.Y + 36)) / options.smoothness)
+            end
+        end
+    end
+end
+
+run_service:BindToRenderStep(update_loop_stepped_name, 199, stepped)
