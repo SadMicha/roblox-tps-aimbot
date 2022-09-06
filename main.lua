@@ -104,8 +104,6 @@ local options = {
     aimbot = true,
     smoothness = 9,
     fov = 50,
-    fov_increase_on_aim = 0, -- increases your fov by this value while the aimbot is active
-    rage_mode = false, -- disregards fov, smoothness, odds and will lock onto people behind you
 
     -- aim type settings
     mouse_emulation = true, -- the default, will emulate user input (and is more natural)
@@ -138,18 +136,37 @@ local options = {
 }
 
 -- ui stuff
-local config = {
-    WindowName = "vakware but better",
-	Color = Color3.fromRGB(255, 0, 0),
-	Keybind = getgenv().ui_code or Enum.KeyCode["RightControl"]
-}
 
 local bracket = loadstring(game:HttpGet("https://raw.githubusercontent.com/AlexR32/Bracket/main/BracketV32.lua"))()
 local window = bracket:Window({Name = "vakware but better", Enabled = true, Color = Color3.new(255, 0, 0), Size = UDim2.new(0,496,0,496), Position = UDim2.new(0.5,-248,0.5,-248)}) do
     local aimbotTab = window:Tab({Name = "Aimbot"}) do
         local aimbotSection = aimbotTab:Section({Name = "Aimbot Section", Side = "Left"}) do
-            aimbotSection:Keybind({Name = "Aimbot Key", Key = options.mouse_key.Name, Mouse = true, Blacklist = {"W", "A", "S", "D", "RightControl"}, Callback = function(_, key)
+            aimbotSection:Toggle({Name = "Aimbot", Value = options.aimbot, Callback = function(bool)
+                options.aimbot = bool
+            end})
+            
+            aimbotSection:Keybind({Name = "Aimbot Key", Key = options.mouse_key.Value, Mouse = true, Blacklist = {"W", "A", "S", "D", "RightControl"}, Callback = function(_, key)
                 options.mouse_key = key
+            end})
+
+            aimbotSection:Toggle({Name = "Show FOV Circle", Value = options.fov_circle, Callback = function(bool)
+                options.fov_circle = bool
+            end})
+
+            aimbotSection:Slider({Name = "FOV", Min = 0, Max = 1000, Value = options.fov, Precise = 2, Unit = "", Callback = function(number)
+                options.fov = number
+            end})
+
+            aimbotSection:Colorpicker({Name = "FOV Color", Color = options.white, Callback = function(color, _)
+                options.white = color
+            end})
+
+            aimbotSection:Slider({Name = "Smoothness", Min = 0, Max = 10, Value = options.smoothness, Precise = 1, Unit = "", Callback = function(number)
+                options.smoothness = number
+            end})
+            
+            aimbotSection:Toggle({Name = "Triggerbot", Value = options.triggerbot, Callback = function(bool)
+                options.triggerbot = bool
             end})
         end
     end
@@ -214,7 +231,7 @@ local players_table = {}
 local function to_screen(pos)
     local screen_pos, in_screen = find_first_child_of_class(workspace, "Camera"):WorldToViewportPoint(pos)
 
-    return vector2_new(screen_pos.X, screen_pos.Y), in_screen, screen_pos, options.rage_mode
+    return vector2_new(screen_pos.X, screen_pos.Y), in_screen
 end
 
 local function new_drawing(class_name)
@@ -318,19 +335,11 @@ local function hitting_what(origin_cframe)
 end
 
 local function is_inside_fov(point)
-    return options.rage_mode or ((point.x - mouse.X) ^ 2 + (point.y - mouse.Y) ^ 2 <= aiming.fov_circle_obj.Radius ^ 2)
+    return ((point.x - mouse.X) ^ 2 + (point.y - mouse.Y) ^ 2 <= aiming.fov_circle_obj.Radius ^ 2)
 end
 
 local function chanced() -- shanced 2 - 0 gf *tabs*
-    return options.rage_mode or math_random(1, 100) <= options.headshot_chance
-end
-
-local function screen_height(yval)
-    if yval > (screen_size.Y / 2) then
-        return -0.5
-    end
-
-    return 0.5
+    return math_random(1, 100) <= options.headshot_chance
 end
 
 local function _refresh()
@@ -347,13 +356,13 @@ getgenv().player_removed = players.ChildRemoved:Connect(refresh)
 
 -- aimbot triggers
 getgenv().input_began = uis.InputBegan:Connect(function(input)
-    if input.UserInputType == options.mouse_key then
+    if input.UserInputType == options.mouse_key or input.KeyCode == options.mouse_key then
         start_aim = true
     end
 end)
 
 getgenv().input_ended = uis.InputEnded:Connect(function(input)
-    if input.UserInputType == options.mouse_key then
+    if input.UserInputType == options.mouse_key or input.KeyCode == options.mouse_key then
         start_aim = false
     end
 end)
@@ -431,9 +440,9 @@ local function stepped()
 
                 for _, obj in pairs(children) do
                     if is_a(obj, "BasePart") then
-                        local part_screen, part_in_screen, _, rage = to_screen(obj.Position)
+                        local part_screen, part_in_screen = to_screen(obj.Position)
 
-                        if can_hit(local_player.Character["HumanoidRootPart"].Position, obj) and (part_in_screen or rage) and (is_inside_fov(part_screen) or rage) then
+                        if can_hit(local_player.Character["HumanoidRootPart"].Position, obj) and (part_in_screen) and (is_inside_fov(part_screen)) then
                             local set = {
                                 part = obj,
                                 screen = part_screen,
@@ -465,13 +474,10 @@ local function stepped()
                 end
 
                 if chosen and start_aim then
-                    local smoothness = (options.rage_mode and 1) or options.smoothness
-
+                    local smoothness = options.smoothness
 					if chosen.visible then
                         mousemoverel((chosen.screen.X - mouse.X) / smoothness, (chosen.screen.Y - (mouse.Y + 36)) / smoothness)
-					elseif options.rage_mode then
-						mousemoverel(screen_size.X / 4, (chosen.screen.Y - (mouse.Y + 36)) * screen_height(mouse.Y))
-					end
+                    end
 
 					if options.triggerbot then
 						if is_descendant_of(hitting_what(local_player.Character["HumanoidRootPart"].CFrame), chosen.part.Parent) then
@@ -494,9 +500,6 @@ local function stepped()
 
 			if options.triggerbot then
 				mouse1release()
-			end
-			if options.backwards_iteration then
-				run_aimbot(plr_offset + 1); -- previous player
 			end
         end
 
