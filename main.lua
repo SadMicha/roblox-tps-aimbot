@@ -157,11 +157,6 @@ local window = bracket:Window({Name = "vakware but better", Enabled = true, Colo
                 options.fov = number
             end})
 
-            aimbotSection:Colorpicker({Name = "FOV Color", Color = white, Callback = function(color: Color3, table)
-                print(color, table)
-                white = color
-            end})
-
             aimbotSection:Slider({Name = "Smoothness", Min = 0, Max = 10, Value = options.smoothness, Precise = 1, Unit = "", Callback = function(number)
                 options.smoothness = number
             end})
