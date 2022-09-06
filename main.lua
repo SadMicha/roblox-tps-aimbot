@@ -67,7 +67,6 @@ local mouse = local_player:GetMouse()
 local cam = find_first_child_of_class(workspace, "Camera")
 
 local screen_size = cam.ViewportSize
-local center_screen = vector2_new(screen_size.X / 2, screen_size.Y / 2)
 
 local enum_rft_blk = Enum.RaycastFilterType.Blacklist
 local glass = Enum.Material.Glass
@@ -77,8 +76,6 @@ local white = color3_rgb(255, 255, 255)
 local dummy_part = instance_new("Part", nil)
 
 drawing_new("Square").Visible = false -- initialize drawing lib
-
-local pi = math.pi
 
 -- dont touch lol
 local custom_players = true
@@ -139,6 +136,32 @@ local options = {
     -- taxing, usually useless, will iterate backwards through players list if the "best player to lock onto" cant be locked onto
     backwards_iteration = false,
 }
+
+-- ui stuff
+local config = {
+    WindowName = "vakware but better",
+	Color = Color3.fromRGB(255, 0, 0),
+	Keybind = getgenv().ui_code or Enum.KeyCode["RightControl"]
+}
+
+local libary = loadstring(game:HttpGet("https://raw.githubusercontent.com/AlexR32/Roblox/main/BracketV3.lua"))()
+local window = libary:CreateWindow(config, game:GetService("CoreGui"))
+
+local aimbotTab = window:CreateTab("Aimbot")
+local funTab = window:CreateTab("Fun")
+local settingsTab = window:CreateTab("UI Settings")
+
+local aimbotSection = aimbotTab:CreateSection("Aimbot")
+local visualSection = aimbotTab:CreateSection("Visual")
+
+local keybindToggle = aimbotSection:CreateToggle("Aimbot Keybind", nil, function(state)
+    return state
+end)
+
+keybindToggle:AddToolTip("Your aimbot key")
+keybindToggle:CreateKeybind(options.mouse_key.Name, function(key)
+    options.mouse_key = Enum.KeyCode[key]
+end)
 
 -- how the script will find the players
 local characters = {}
