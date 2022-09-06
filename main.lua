@@ -3,8 +3,8 @@
 -- options
 getgenv().options = {
     aimbot = true,
-    aimbot_toggle_key = "NONE",
-    aimbot_key = "NONE",
+    aimbot_toggle_key = Enum.KeyCode.E.Value,
+    aimbot_key = Enum.UserInputType.MouseButton1.Value,
     fov = 300,
     show_fov = true,
     fov_color = Color3.new(1, 1, 1),
@@ -15,7 +15,7 @@ getgenv().options = {
     team_check = true,
     wall_check = true,
 
-    ui_toggle_key = "NONE",
+    ui_toggle_key = Enum.KeyCode.RightControl.Value,
     ui_visible = true
 }
 
