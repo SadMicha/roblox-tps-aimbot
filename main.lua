@@ -108,11 +108,12 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
     end
 end
 
+local uis = game:GetService("UserInputService")
 local playerService = game:GetService("Players")
+local run_service = game:GetService("RunService")
 local local_player = playerService.LocalPlayer
 local camera = workspace.CurrentCamera
 local mouse = local_player:GetMouse()
-local run_service = game:GetService("RunService")
 
 local startAim = false
 
@@ -264,6 +265,14 @@ local function get_aim_part(target)
     return target.Character.HumanoidRootPart.Position
 end
 
+uis.InputBegan:Connect(function(input, gameProcessedEvent)
+    if not gameProcessedEvent then
+        if input.KeyCode[objects.ui_toggle_key] then
+            Window:Toggle(objects.ui_visible)
+        end
+    end
+end)
+
 local last_tick = tick()
 local function stepped()
     if (tick() - last_tick) > (10 / 1000) then
@@ -273,7 +282,7 @@ local function stepped()
             Visible = options.show_fov,
             Thickness = 1,
             Radius = options.fov,
-            Position = Vector2.new(mouse.Origin.Position.X, mouse.Origin.Position.Y + 36),
+            Position = Vector2.new(mouse.X, mouse.Y + 36),
             Color = options.fov_color,
             instance = "Circle",
         })
