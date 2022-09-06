@@ -275,7 +275,7 @@ local function stepped()
             Radius = options.fov,
             Position = mouse.Origin.Position,
             Color = options.fov_color,
-            Instance = "Circle",
+            instance = "Circle",
         })
 
         -- code
