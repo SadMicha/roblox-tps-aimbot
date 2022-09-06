@@ -194,15 +194,29 @@ local function check_same_team(target)
     return false
 end
 
-local function add_or_update_instance(table, child, properties)
+local function new_drawing(class_name)
+    return function(props)
+        local inst = Drawing.new(class_name)
+
+        for idx, val in pairs(props) do
+            if idx ~= "instance" then
+                inst[idx] = val
+            end
+        end
+        
+        return inst
+    end
+end
+
+local function add_or_update_instance(table, child, props)
     local inst = table[child]
     if not inst then
-        table[child] = Drawing.new(properties.Instance)(properties)
+        table[child] = new_drawing(props.instance)(props)
         return inst
     end
 
-    for idx, val in pairs(properties) do
-        if idx ~= "Instance" then
+    for idx, val in pairs(props) do
+        if idx ~= "instance" then
             inst[idx] = val
         end
     end
