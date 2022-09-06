@@ -77,7 +77,6 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
             end})
 
             Visual:Colorpicker({Name = "FOV Color", Color = options.fov_color, Callback = function(color, table)
-                print(table)
                 options.fov_color = table
             end})
         end
@@ -260,7 +259,7 @@ local function get_aim_part(target)
     return target.Character.HumanoidRootPart.Position
 end
 
-local last_tick = tick()
+local last_tick = 0
 local function stepped()
     if (tick() - last_tick) > (10 / 1000) then
         last_tick = tick()
