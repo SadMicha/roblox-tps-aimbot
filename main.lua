@@ -147,12 +147,10 @@ local config = {
 local bracket = loadstring(game:HttpGet("https://raw.githubusercontent.com/AlexR32/Bracket/main/BracketV32.lua"))()
 local window = bracket:Window({Name = "vakware but better", Enabled = true, Color = Color3.new(255, 0, 0), Size = UDim2.new(0,496,0,496), Position = UDim2.new(0.5,-248,0.5,-248)}) do
     local aimbotTab = window:Tab({Name = "Aimbot"}) do
-        local aimbotKeybind = aimbotTab:Keybind({Name = "Aimbot Key", Side = "Left", Key = options.mouse_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(bool, key)
-            options.mouse_key = key
-        end})
-
-        local aimbotSection = aimbotTab:Section({Name = "Aimbot Section", Side = "Right"}) do
-            aimbotSection:Keybind()
+        local aimbotSection = aimbotTab:Section({Name = "Aimbot Section", Side = "Left"}) do
+            aimbotSection:Keybind({Name = "Aimbot Key", Key = options.mouse_key.Name, Mouse = true, Blacklist = {}, Callback = function(bool, key)
+                options.mouse_key = key
+            end})
         end
     end
 end
