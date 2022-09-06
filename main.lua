@@ -295,7 +295,7 @@ end
 
 uis.InputBegan:Connect(function(input, gameProcessedEvent)
     if not gameProcessedEvent then
-        if input.KeyCode[options.ui_toggle_key] then
+        if input.KeyCode.Value == options.ui_toggle_key then
             options.ui_visible = not options.ui_visible
             Window:Toggle(options.ui_visible)
         end
