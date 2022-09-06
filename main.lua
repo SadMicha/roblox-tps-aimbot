@@ -144,24 +144,18 @@ local config = {
 	Keybind = getgenv().ui_code or Enum.KeyCode["RightControl"]
 }
 
-local libary = loadstring(game:HttpGet("https://raw.githubusercontent.com/AlexR32/Roblox/main/BracketV3.lua"))()
-local window = libary:CreateWindow(config, game:GetService("CoreGui"))
+local bracket = loadstring(game:HttpGet("https://raw.githubusercontent.com/AlexR32/Bracket/main/BracketV32.lua"))()
+local window = bracket:Window({Name = "vakware but better", Enabled = true, Color = Color3.new(255, 0, 0), Size = UDim2.new(0,496,0,496), Position = UDim2.new(0.5,-248,0.5,-248)}) do
+    local aimbotTab = window:Tab({Name = "Aimbot"}) do
+        local aimbotKeybind = aimbotTab:Keybind({Name = "Aimbot Key", Side = "Left", Key = options.mouse_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(bool, key)
+            options.mouse_key = key
+        end})
 
-local aimbotTab = window:CreateTab("Aimbot")
-local funTab = window:CreateTab("Fun")
-local settingsTab = window:CreateTab("UI Settings")
-
-local aimbotSection = aimbotTab:CreateSection("Aimbot")
-local visualSection = aimbotTab:CreateSection("Visual")
-
-local keybindToggle = aimbotSection:CreateToggle("Aimbot Keybind", nil, function(state)
-    return state
-end)
-
-keybindToggle:AddToolTip("Your aimbot key")
-keybindToggle:CreateKeybind(options.mouse_key.Name, function(key)
-    options.mouse_key = Enum.KeyCode[key]
-end)
+        local aimbotSection = aimbotTab:Section({Name = "Aimbot Section", Side = "Right"}) do
+            aimbotSection:Keybind()
+        end
+    end
+end
 
 -- how the script will find the players
 local characters = {}
