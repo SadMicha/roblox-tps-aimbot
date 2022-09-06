@@ -1,7 +1,7 @@
 local library = loadstring(game:HttpGet('https://garfieldscripts.xyz/ui-libs/janlib.lua'))()
 -- [Legit Tab UI] ------------------------------------------------------------------------------------------------------------------------------------------------------------
-local LegitTab = library:AddTab("Legit"); 
-local LegitColunm1 = LegitTab:AddColumn();
+local LegitTab = library:AddTab("Legit")
+local LegitColunm1 = LegitTab:AddColumn()
 local LegitMain = LegitColunm1:AddSection("Aim Assist")
 
 LegitMain:AddDivider("Main");
@@ -26,26 +26,6 @@ local LegitThird = LegitColunm1:AddSection("Trigger Bot")
 LegitThird:AddDivider("Main");
 LegitThird:AddToggle{text = "Enabled", flag = "TriggerEnabled"}:AddBind({flag = "TriggerBind", key = "One"});
 LegitThird:AddSlider{text = "Trigger Speed", flag = "TriggerSpeed", min = 0, max = 1000, value = 10, suffix = "%"}
-
-local LegitColunm2 = LegitTab:AddColumn();
-local LegitForth = LegitColunm2:AddSection("Bullet Redirection")
-LegitForth:AddDivider("Main");
-LegitForth:AddToggle{text = "Enabled", flag = "SilentAimEnabled"}
-LegitForth:AddSlider{text = "Silent Aim FOV", flag = "SilentAimFOV", min = 0, max = 750, value = 105, suffix = "°"}
-LegitForth:AddSlider{text = "Hit Chances", flag = "HitChances", min = 0, max = 100, value = 100, suffix = "%"}
-LegitForth:AddList({text = "Redirection Mode", flag = "RedirectionMode", value = "P Mode", values = {"P Mode", "Normal Mode"}});
-LegitForth:AddList({text = "Hit Box", flag = "SilentAimHitbox", value = "Head", values = {"Head", "Torso"}});
-LegitForth:AddDivider("Draw Fov");
-LegitForth:AddToggle{text = "Enabled", flag = "Circle2Enabled"}:AddColor({flag = "Circle2Color", color = Color3.new(1, 1, 1)});
-LegitForth:AddSlider{text = "Num Sides", flag = "Circle2NumSides", min = 3, max = 48, value = 48, suffix = "°"}
-LegitForth:AddDivider("Checks");
-LegitForth:AddToggle{text = "Enabled", flag = "VisibleCheck"}
-
-local LegitFifth = LegitColunm2:AddSection("Recoil Control")
-LegitFifth:AddDivider("Main");
-LegitFifth:AddToggle{text = "Enabled", flag = "RecoilControlEnabled"}
-LegitFifth:AddSlider{text = "Model Kick", flag = "ModelKick", min = 5, max = 100, value = 100, suffix = "%"}
-LegitFifth:AddSlider{text = "Camera Kick", flag = "CameraKick", min = 5, max = 100, value = 100, suffix = "%"}
 
 -- [Rage Tab UI] ------------------------------------------------------------------------------------------------------------------------------------------------------------
 local RageTab = library:AddTab("Rage"); 
