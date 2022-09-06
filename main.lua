@@ -46,7 +46,7 @@ local mouse1release = mouse1release
 math_randomseed(tick())
 function random_string(len)
 	local str = ""
-	for i = 1, len do
+	for _ = 1, len do
 		str = str .. string_char(math_random(97, 122))
 	end
 	return str
@@ -69,7 +69,7 @@ local cam = find_first_child_of_class(workspace, "Camera")
 local enum_rft_blk = Enum.RaycastFilterType.Blacklist
 local glass = Enum.Material.Glass
 
-local white = color3_rgb(255, 255, 255)
+local white = Color3.new(255, 255, 255)
 
 local dummy_part = instance_new("Part", nil)
 
