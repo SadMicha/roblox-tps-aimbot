@@ -30,6 +30,8 @@ local function random_string(len)
 end
 getgenv().update_loop_stepped_name = random_string(math.random(15, 35))
 
+local startAim = false
+
 -- ui stuff
 local Bracket = loadstring(game:HttpGet("https://raw.githubusercontent.com/AlexR32/Bracket/main/BracketV32.lua"))()
 
@@ -47,6 +49,7 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
             
             SettingSection:Keybind({Name = "Aimbot Key", Key = options.aimbot_key, Mouse = true, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(key, bool)
                 options.aimbot_key = key
+                startAim = bool
             end})
 
             SettingSection:Slider({Name = "Smoothness", Min = 0, Max = 10, Value = options.smoothness, Precise = 1, Unit = "", Callback = function(number)
@@ -98,8 +101,9 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
     local Settings = Window:Tab({Name = "UI Settings"}) do
         Settings:Divider({Text = "Settings", Side = "Left"})
         local SettingSection = Settings:Section({Name = "Settings", Side = "Left"}) do
-            SettingSection:Toggle({Name = "UI Visisble", Value = options.ui_visible, Callback = function(bool)
+            SettingSection:Toggle({Name = "UI Visible", Value = options.ui_visible, Callback = function(bool)
                 options.ui_visible = bool
+                Window:Toggle(options.ui_visible)
             end}):Keybind({Key = options.ui_toggle_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(bool, key)
                 options.ui_toggle_key = key
             end})
@@ -113,8 +117,6 @@ local run_service = game:GetService("RunService")
 local local_player = playerService.LocalPlayer
 local camera = workspace.CurrentCamera
 local mouse = local_player:GetMouse()
-
-local startAim = false
 
 local aiming = {
     fov_circle_object = nil
@@ -257,26 +259,6 @@ local function get_aim_part(target)
 
     return target.Character.HumanoidRootPart.Position
 end
-
-uis.InputBegan:Connect(function(input, gameProcessedEvent)
-    if not gameProcessedEvent then
-        if input.KeyCode[objects.ui_toggle_key] then
-            Window:Toggle(objects.ui_visible)
-        end
-
-        if input.UserInputType[objects.aimbot_key] or input.KeyCode[options.aimbot_key] then
-            startAim = true
-        end
-    end
-end)
-
-uis.InputEnded:Connect(function(input, gameProcessedEvent)
-    if not gameProcessedEvent then
-        if input.UserInputType[objects.aimbot_key] or input.KeyCode[options.aimbot_key] then
-            startAim = false
-        end
-    end
-end)
 
 local last_tick = tick()
 local function stepped()
