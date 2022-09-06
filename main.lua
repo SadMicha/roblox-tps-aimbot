@@ -43,11 +43,11 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
                 options.aimbot = bool
             end}):Keybind({Key = options.aimbot_toggle_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(bool, key)
                 options.aimbot_toggle_key = key
-                print(key)
             end})
             
             SettingSection:Keybind({Name = "Aimbot Key", Key = options.aimbot_key, Mouse = true, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(bool, key)
                 options.aimbot_key = bool
+                print(bool, key)
             end})
 
             SettingSection:Slider({Name = "Smoothness", Min = 0, Max = 10, Value = options.smoothness, Precise = 1, Unit = "", Callback = function(number)
@@ -102,7 +102,6 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
                 options.ui_visible = bool
             end}):Keybind({Key = options.ui_toggle_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(bool, key)
                 options.ui_toggle_key = key
-                print(bool)
             end})
         end
     end
