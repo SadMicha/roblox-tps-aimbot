@@ -100,10 +100,7 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
     local Settings = Window:Tab({Name = "UI Settings"}) do
         Settings:Divider({Text = "Settings", Side = "Left"})
         local SettingSection = Settings:Section({Name = "Settings", Side = "Left"}) do
-            SettingSection:Toggle({Name = "UI Visible", Value = options.ui_visible, Callback = function(bool)
-                options.ui_visible = bool
-                Window:Toggle(options.ui_visible)
-            end}):Keybind({Key = options.ui_toggle_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(bool, key)
+            SettingSection:Keybind({Key = options.ui_toggle_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(bool, key)
                 options.ui_toggle_key = key
             end})
         end
@@ -267,6 +264,7 @@ local function get_aim_part(target)
     return target.Character.HumanoidRootPart.Position
 end
 
+
 local last_tick = 0
 local function stepped()
     if (tick() - last_tick) > (10 / 1000) then
@@ -294,5 +292,14 @@ local function stepped()
         end
     end
 end
+
+uis.InputBegan:Connect(function(input, gameProcessedEvent)
+    if not gameProcessedEvent then
+        if input.KeyCode[options.ui_toggle_key] then
+            options.ui_visible = not options.ui_visible
+            Window:Toggle(options.ui_visible)
+        end
+    end
+end)
 
 run_service:BindToRenderStep(update_loop_stepped_name, 199, stepped)
