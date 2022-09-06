@@ -148,7 +148,7 @@ local bracket = loadstring(game:HttpGet("https://raw.githubusercontent.com/AlexR
 local window = bracket:Window({Name = "vakware but better", Enabled = true, Color = Color3.new(255, 0, 0), Size = UDim2.new(0,496,0,496), Position = UDim2.new(0.5,-248,0.5,-248)}) do
     local aimbotTab = window:Tab({Name = "Aimbot"}) do
         local aimbotSection = aimbotTab:Section({Name = "Aimbot Section", Side = "Left"}) do
-            aimbotSection:Keybind({Name = "Aimbot Key", Key = options.mouse_key.Name, Mouse = true, Blacklist = {}, Callback = function(bool, key)
+            aimbotSection:Keybind({Name = "Aimbot Key", Key = options.mouse_key.Name, Mouse = true, Blacklist = {"W", "A", "S", "D", "RightControl"}, Callback = function(_, key)
                 options.mouse_key = key
             end})
         end
