@@ -112,7 +112,6 @@ local options = {
 
     -- aim type settings
     mouse_emulation = true, -- the default, will emulate user input (and is more natural)
-    camera_cframe = false, -- aimlock, easier to detect, does not obey the smoothness setting but locks instantly
 
     -- will not lock on to people with this *username*, do not use a displayname for this, use the username
     ignore_people = {
@@ -127,8 +126,6 @@ local options = {
 
     -- https://developer.roblox.com/en-us/api-reference/enum/UserInputType
     mouse_key = Enum.UserInputType.MouseButton1,
-    -- how to disable: mouse_key = nil,
-    -- how to enable: mouse_key = Enum.UserInputType["*"],
 
     -- headshot odds
     headshot_chance = 10, -- odds for aiming on the head in percentage, 0 = no head (lol) and 100 = always head
