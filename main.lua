@@ -4,12 +4,10 @@ local instance_new = Instance.new
 
 -- workspace
 local vector2_new = Vector2.new
-local cframe_new = CFrame.new
 local raycast_params_new = RaycastParams.new
 local raycast = workspace.Raycast
 
 -- color
-local color3_rgb = Color3.fromRGB
 local color3_hsv = Color3.fromHSV
 
 -- math
@@ -170,7 +168,7 @@ local window = bracket:Window({Name = "vakware but better", Enabled = true, Colo
             end})
         end
 
-        local utils = aimbotTab:Section({"Utils", Side = "Right"}) do
+        local utils = aimbotTab:Section({Name = "Utils", Side = "Right"}) do
             utils:Toggle({Name = "Team check", Value = options.team_check, Callback = function(bool)
                 options.team_check = bool
             end})
@@ -182,7 +180,7 @@ local window = bracket:Window({Name = "vakware but better", Enabled = true, Colo
     end
 
     local uiTab = window:Tab({Name = "UI Settings"}) do
-        local uiSection = uiTab:Section({Name = "General"}) do
+        local uiSection = uiTab:Section({Name = "General", Side = "Left"}) do
             uiSection:Keybind({Name = "UI Toggle Key", Key = options.ui_toggle_key.Name, Mouse = false, Blacklist = {"W", "A", "S", "D"}, Callback = function(_, key)
                 options.ui_toggle_key = key
             end})
