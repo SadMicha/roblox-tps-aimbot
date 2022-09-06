@@ -5,18 +5,22 @@ getgenv().options = {
     aimbot_key = "NONE",
     fov = 300,
     show_fov = true,
-    fov_color = Color3.new(0, 0, 0),
+    fov_color = Color3.new(1, 1, 1),
     smoothness = 1,
     triggerbot = false,
 
     team_check = true,
-    wall_check = true
+    wall_check = true,
+
+    ui_toggle_key = "NONE",
+    ui_visible = true
 }
 
 -- ui stuff
 local Bracket = loadstring(game:HttpGet("https://raw.githubusercontent.com/AlexR32/Bracket/main/BracketV32.lua"))()
 
 local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Color = Color3.new(1,0.5,0.25), Size = UDim2.new(0,496,0,496), Position = UDim2.new(0.5,-248,0.5,-248)}) do
+    -- aimbot
     local Aimbot = Window:Tab({Name = "Aimbot"}) do
         -- settings
         Aimbot:Divider({Text = "Settings", Side = "Left"})
@@ -24,7 +28,7 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
             SettingSection:Toggle({Name = "Aimbot", Value = options.aimbot, Callback = function(bool)
                 options.aimbot = bool
             end}):Keybind({Key = options.aimbot_toggle_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(bool, key)
-                options.aimbot_toggle_key = bool
+                options.aimbot_toggle_key = key
             end})
             
             SettingSection:Keybind({Name = "Aimbot Key", Key = options.aimbot_key, Mouse = true, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(bool, key)
@@ -65,6 +69,18 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
 
             Misc:Toggle({Name = "Wall Check", Value = options.wall_check, Callback = function(bool)
                 options.wall_check = bool
+            end})
+        end
+    end
+
+    -- settings
+    local Settings = Window:Tab({Name = "Aimbot"}) do
+        Settings:Divider({Text = "Settings", Side = "Left"})
+        local SettingSection = Settings:Section({Name = "Settings", Side = "Left"}) do
+            SettingSection:Toggle({Name = "UI Visisble", Value = options.ui_visible, Callback = function(bool)
+                options.ui_visible = bool
+            end}):Keybind({Key = options.ui_toggle_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(bool, key)
+                options.ui_toggle_key = key
             end})
         end
     end
