@@ -3,8 +3,8 @@
 -- options
 getgenv().options = {
     aimbot = true,
-    aimbot_toggle_key = Enum.KeyCode.E.Value,
-    aimbot_key = Enum.UserInputType.MouseButton1.Value,
+    aimbot_toggle_key = "NONE",
+    aimbot_key = "NONE",
     fov = 300,
     show_fov = true,
     fov_color = Color3.new(1, 1, 1),
@@ -15,7 +15,7 @@ getgenv().options = {
     team_check = true,
     wall_check = true,
 
-    ui_toggle_key = Enum.KeyCode.RightControl.Value,
+    ui_toggle_key = "NONE",
     ui_visible = true
 }
 
@@ -102,6 +102,7 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
         local SettingSection = Settings:Section({Name = "Settings", Side = "Left"}) do
             SettingSection:Keybind({Key = options.ui_toggle_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(bool, key)
                 options.ui_toggle_key = key
+                print(options.ui_toggle_key)
             end})
         end
     end
