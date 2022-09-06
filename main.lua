@@ -197,13 +197,12 @@ end
 local function add_or_update_instance(table, child, properties)
     local inst = table[child]
     if not inst then
-        table[child] = Drawing.new(properties.instance)(properties)
-
-        return inst;
+        table[child] = Drawing.new(properties.Instance)(properties)
+        return inst
     end
 
     for idx, val in pairs(properties) do
-        if idx ~= "instance" then
+        if idx ~= "Instance" then
             inst[idx] = val
         end
     end
@@ -262,7 +261,7 @@ local function stepped()
             Radius = options.fov,
             Position = mouse.Origin.Position,
             Color = options.fov_color,
-            instance = "Circle"
+            Instance = "Circle",
         })
 
         -- code
