@@ -74,13 +74,8 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
             end})
 
             Visual:Colorpicker({Name = "FOV Color", Color = options.fov_color, Callback = function(color, table)
-                for _, cont in ipairs(color) do
-                    print(cont)
-                end
-
                 print(table)
-
-                options.fov_color = Color3.fromRGB(color.R, color.G, color.B)
+                options.fov_color = table
             end})
         end
 
