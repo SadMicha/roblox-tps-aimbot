@@ -257,7 +257,7 @@ local function stepped()
         last_tick = tick()
 
         add_or_update_instance(aiming, "fov_circle_obj", {
-            Visible = options.fov_circle,
+            Visible = options.show_fov,
             Thickness = 1,
             Radius = options.fov,
             Position = mouse.Origin.Position,
