@@ -273,7 +273,7 @@ local function stepped()
             Visible = options.show_fov,
             Thickness = 1,
             Radius = options.fov,
-            Position = mouse.Origin.Position,
+            Position = Vector2.new(mouse.Origin.Position.X, mouse.Origin.Position.Y + 36),
             Color = options.fov_color,
             instance = "Circle",
         })
