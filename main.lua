@@ -102,7 +102,7 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
                 options.ui_visible = bool
             end}):Keybind({Key = options.ui_toggle_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(bool, key)
                 options.ui_toggle_key = key
-                print(key)
+                print(bool)
             end})
         end
     end
@@ -225,10 +225,10 @@ local function add_or_update_instance(table, child, props)
     return inst
 end
 
-local function world_to_view_point(target)
-    local vector, inViewport = camera:WorldToViewportPoint(target.Character.PrimaryPart.Position)
+local function world_to_view_point(pos)
+    local vector, inViewport = camera:WorldToViewportPoint(pos)
     if inViewport then
-        return Vector2.new(vector.X, vector.Y), (can_hit(target) and true or false)
+        return Vector2.new(vector.X, vector.Y)
     end
 end
 
@@ -292,7 +292,8 @@ local function stepped()
             local closest = closest_player()
             local aim_part = get_aim_part(closest)
             if aim_part and closest then
-                mousemoverel((aim_part.X - mouse.X) / options.smoothness, (aim_part.Y - (mouse.Y + 36)) / options.smoothness)
+                local real_pos = world_to_view_point(aim_part)
+                mousemoverel((real_pos.X - mouse.X) / options.smoothness, (real_pos.Y - (mouse.Y + 36)) / options.smoothness)
             end
         end
     end
