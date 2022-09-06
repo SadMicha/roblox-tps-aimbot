@@ -1,176 +1,140 @@
-local library = loadstring(game:HttpGet('https://garfieldscripts.xyz/ui-libs/janlib.lua'))()
--- [Legit Tab UI] ------------------------------------------------------------------------------------------------------------------------------------------------------------
-local LegitTab = library:AddTab("Legit")
-local LegitColunm1 = LegitTab:AddColumn()
-local LegitMain = LegitColunm1:AddSection("Aim Assist")
+local Config = {
+    WindowName = "Example Library",
+	Color = Color3.fromRGB(255,128,64),
+	Keybind = Enum.KeyCode.RightBracket
+}
 
-LegitMain:AddDivider("Main");
-LegitMain:AddToggle{text = "Enabled", flag = "AimbotEnabled", callback = function(bool)
-    print(bool)
-end}
-LegitMain:AddSlider{text = "Aimbot FOV", flag = "AimbotFov", min = 0, max = 750, value = 105, suffix = "°"}
-LegitMain:AddSlider{text = "Smoothing Factor", flag = "Smoothing", min = 0, max = 30, value = 3, suffix = "%"}
-LegitMain:AddList({text = "Hit Box", flag = "AimbotHitbox", value = "Head", values = {"Head", "Torso"}});
-LegitMain:AddList({text = "Aimbot Key", flag = "AimbotKey", value = "On Aim", values = {"On Aim", "On Shoot"}});
-LegitMain:AddDivider("Draw Fov");
-LegitMain:AddToggle{text = "Enabled", flag = "CircleEnabled"}:AddColor({flag = "CircleColor", color = Color3.new(1, 1, 1)});
-LegitMain:AddSlider{text = "Num Sides", flag = "CircleNumSides", min = 3, max = 48, value = 48, suffix = "°"}
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/AlexR32/Roblox/main/BracketV3.lua"))()
+local Window = Library:CreateWindow(Config, game:GetService("CoreGui"))
 
-local LegitSecond = LegitColunm1:AddSection("Extend Hitbox")
-LegitSecond:AddDivider("Main");
-LegitSecond:AddToggle{text = "Enabled", flag = "HitboxEnabled"}
-LegitSecond:AddList({text = "Hit Box", flag = "ExtendHitbox", value = "Head", values = {"Head", "Torso"}});
-LegitSecond:AddSlider{text = "Extend Rate", flag = "ExtendRate", min = 0, max = 10, value = 10, suffix = "%"}
+local Tab1 = Window:CreateTab("Example")
+local Tab2 = Window:CreateTab("UI Settings")
 
-local LegitThird = LegitColunm1:AddSection("Trigger Bot")
-LegitThird:AddDivider("Main");
-LegitThird:AddToggle{text = "Enabled", flag = "TriggerEnabled"}:AddBind({flag = "TriggerBind", key = "One"});
-LegitThird:AddSlider{text = "Trigger Speed", flag = "TriggerSpeed", min = 0, max = 1000, value = 10, suffix = "%"}
+local Section1 = Tab1:CreateSection("First Section")
+local Section2 = Tab1:CreateSection("Second Section")
+local Section3 = Tab2:CreateSection("Menu")
+local Section4 = Tab2:CreateSection("Background")
 
--- [Rage Tab UI] ------------------------------------------------------------------------------------------------------------------------------------------------------------
-local RageTab = library:AddTab("Rage"); 
-local RageColunm1 = RageTab:AddColumn();
-local RageMain = RageColunm1:AddSection("Auto Wall")
+local Label1 = Section1:CreateLabel("Label 1")
+Label1:UpdateText("lol")
+-------------
+local Button1 = Section1:CreateButton("Button 1", function()
+	print("Click Button 1")
+end)
+Button1:AddToolTip("Button 1 ToolTip")
+-------------
+local Toggle1 = Section1:CreateToggle("Toggle 1", nil, function(State)
+	print(State)
+end)
+Toggle1:AddToolTip("Toggle 1 ToolTip")
+Toggle1:CreateKeybind("Y", function(Key)
+	print(Key)
+end)
 
-RageMain:AddDivider("Main");
-RageMain:AddToggle{text = "Enabled", flag = "AutoWallEnabled"}
+local TextBox1 = Section1:CreateTextBox("TextBox 1", "Only numbers", true, function(Value)
+	print(Value)
+end)
+TextBox1:AddToolTip("Yes only numbers")
+TextBox1:SetValue("new value here")
+Section1:CreateTextBox("TextBox 1\nMultiline", "numbers and letters", false, function(String)
+	print(String)
+end)
+-------------
+local Slider1 = Section1:CreateSlider("Slider 1", 0,100,nil,true, function(Value)
+	print(Value)
+end)
+Slider1:AddToolTip("Slider 1 ToolTip")
+Slider1:SetValue(50)
+-------------
+local Dropdown1 = Section1:CreateDropdown("Dropdown 1", {"Option 1","Option 2","Option 3"}, function(String)
+	print(String)
+end)
+Dropdown1:AddToolTip("Dropdown 1 ToolTip")
+Dropdown1:SetOption("Option 1")
+-------------
+local Colorpicker1 = Section1:CreateColorpicker("Colorpicker 1", function(Color)
+	print(Color)
+end)
+Colorpicker1:AddToolTip("Colorpicker 1 ToolTip")
+Colorpicker1:UpdateColor(Color3.fromRGB(255,0,0))
+-------------
+Section2:CreateLabel("Label 2\nMultiline")
+-------------
+local Button2 = Section2:CreateButton("Button 2\nMultiline", function()
+	print("Click Button 2")
+end)
+Button2:AddToolTip("Button 2 ToolTip\nMultiline")
+-------------
+local Toggle2 = Section2:CreateToggle("Toggle 2\nMultiline", nil, function(State)
+	print(State)
+end)
+Toggle2:AddToolTip("Toggle 2 ToolTip\nMultiline")
+Toggle2:CreateKeybind("U", function(Key)
+	print(Key)
+end)
+-------------
+local Slider2 = Section2:CreateSlider("Slider 2\nMultiline", 0,100,nil,false, function(Value)
+	print(Value)
+end)
+Slider2:AddToolTip("Slider 2 ToolTip\nMultiline")
+Slider2:SetValue(25)
+-------------
+local Dropdown2 = Section2:CreateDropdown("Dropdown 2\nMultiline", {"Option 4","Option 5","Option 6"}, function(String)
+	print(String)
+end)
+Dropdown2:AddToolTip("Dropdown 2 ToolTip")
+Dropdown2:SetOption("Option 6")
+-------------
+local Colorpicker2 = Section2:CreateColorpicker("Colorpicker 2\nMultiline", function(Color)
+	print(Color)
+end)
+Colorpicker2:AddToolTip("Colorpicker 2 ToolTip")
+Colorpicker2:UpdateColor(Color3.fromRGB(0,0,255))
+-------------
+local Toggle3 = Section3:CreateToggle("UI Toggle", nil, function(State)
+	Window:Toggle(State)
+end)
+Toggle3:CreateKeybind(tostring(Config.Keybind):gsub("Enum.KeyCode.", ""), function(Key)
+	Config.Keybind = Enum.KeyCode[Key]
+end)
+Toggle3:SetState(true)
 
--- [Visuals Tab UI] ------------------------------------------------------------------------------------------------------------------------------------------------------------
-local VisualsTab = library:AddTab("Visuals"); 
-local VisualsColunm1 = VisualsTab:AddColumn();
-local VisualsMain = VisualsColunm1:AddSection("Local Visuals")
+local Colorpicker3 = Section3:CreateColorpicker("UI Color", function(Color)
+	Window:ChangeColor(Color)
+end)
+Colorpicker3:UpdateColor(Config.Color)
 
-VisualsMain:AddDivider("Main");
-VisualsMain:AddToggle{text = "Enabled", flag = "LocalVisualsEnabled"}
-VisualsMain:AddToggle{text = "Custom Arm", flag = "CustomArm"}:AddColor({flag = "ArmColor", color = Color3.new(0.599623620510101318359375, 0.447115242481231689453125, 0.97174417972564697265625)});
-VisualsMain:AddSlider{text = "Transparency", flag = "ArmTransparency", min = 0.10, max = 0.95, float = 0.01, value = 0.85, suffix = "%"}
-VisualsMain:AddList({text = "Material", flag = "ArmMaterial", value = "ForceField", values = {"ForceField", "Neon", "SmoothPlastic"}});
-VisualsMain:AddToggle{text = "Custom Weapon", flag = "CustomWeapon"}:AddColor({flag = "WeaponColor", color = Color3.new(1, 1, 1)});
-VisualsMain:AddSlider{text = "Transparency", flag = "WeaponTransparency", min = 0.10, max = 0.95, float = 0.01, value = 0.85, suffix = "%"}
-VisualsMain:AddList({text = "Material", flag = "WeaponMaterial", value = "ForceField", values = {"ForceField", "Neon", "SmoothPlastic"}});
-VisualsMain:AddDivider("Mesh");
-VisualsMain:AddToggle{text = "Enabled", flag = "TextureEnabled"}
-VisualsMain:AddList({text = "Arm Animation", flag = "ArmAnimation", value = "Bubbles", values = {"Bubbles", "Scanning"}});
-VisualsMain:AddList({text = "Weapon Animation", flag = "WeaponAnimation", value = "Bubbles", values = {"Bubbles", "Scanning"}});
-VisualsMain:AddDivider("Third Person");
-VisualsMain:AddToggle{text = "Enabled", flag = "ThirdPersonEnabled"}:AddColor({flag = "ThirdPersonColor", color = Color3.new(1, 1, 1)});
-VisualsMain:AddList({text = "Material", flag = "ThirdPersonMaterial", value = "ForceField", values = {"ForceField", "SmoothPlastic"}});
+-- credits to jan for patterns
+local Dropdown3 = Section4:CreateDropdown("Image", {"Default","Hearts","Abstract","Hexagon","Circles","Lace With Flowers","Floral"}, function(Name)
+	if Name == "Default" then
+		Window:SetBackground("2151741365")
+	elseif Name == "Hearts" then
+		Window:SetBackground("6073763717")
+	elseif Name == "Abstract" then
+		Window:SetBackground("6073743871")
+	elseif Name == "Hexagon" then
+		Window:SetBackground("6073628839")
+	elseif Name == "Circles" then
+		Window:SetBackground("6071579801")
+	elseif Name == "Lace With Flowers" then
+		Window:SetBackground("6071575925")
+	elseif Name == "Floral" then
+		Window:SetBackground("5553946656")
+	end
+end)
+Dropdown3:SetOption("Default")
 
-local VisualsColunm2 = VisualsTab:AddColumn();
-local VisualsSecond = VisualsColunm2:AddSection("Camera Visuals")
+local Colorpicker4 = Section4:CreateColorpicker("Color", function(Color)
+	Window:SetBackgroundColor(Color)
+end)
+Colorpicker4:UpdateColor(Color3.new(1,1,1))
 
-VisualsSecond:AddDivider("Main");
-VisualsSecond:AddToggle{text = "Enabled", flag = "CameraVisualsEnabled"}
-VisualsSecond:AddToggle{text = "Change Camera FOV", flag = "ChangeCameraFOV"}
-VisualsSecond:AddSlider{text = "Camera FOV", flag = "CameraFOV", min = 10, max = 120, value = 120, suffix = "°"}
-VisualsSecond:AddToggle{text = "Remove Round Lock", flag = "RemoveRoundLock"}
-VisualsSecond:AddToggle{text = "No Camera Bob", flag = "NoCameraBob"}
-VisualsSecond:AddToggle{text = "No Gun Bob", flag = "NoGunBob"}
-VisualsSecond:AddToggle{text = "Remove Gun Scope", flag = "RemoveGunScope"}
-VisualsSecond:AddToggle{text = "Anti Suppression", flag = "AntiSuppression"}
+local Slider3 = Section4:CreateSlider("Transparency",0,1,nil,false, function(Value)
+	Window:SetBackgroundTransparency(Value)
+end)
+Slider3:SetValue(0)
 
--- [Library Settings UI] -----------------------------------------------------------------------------------------------------------------------------------------------------
-local SettingsTab = library:AddTab("Settings"); 
-local SettingsColumn = SettingsTab:AddColumn(); 
-local SettingsColumn2 = SettingsTab:AddColumn(); 
-local SettingSection = SettingsColumn:AddSection("Menu"); 
-local ConfigSection = SettingsColumn2:AddSection("Configs");
-local Warning = library:AddWarning({type = "confirm"});
-
-SettingSection:AddBind({text = "Open / Close", flag = "UI Toggle", nomouse = true, key = "End", callback = function()
-    library:Close();
-end});
-
-SettingSection:AddColor({text = "Accent Color", flag = "Menu Accent Color", color = Color3.new(0.599623620510101318359375, 0.447115242481231689453125, 0.97174417972564697265625), callback = function(color)
-    if library.currentTab then
-        library.currentTab.button.TextColor3 = color;
-    end
-    for i,v in pairs(library.theme) do
-        v[(v.ClassName == "TextLabel" and "TextColor3") or (v.ClassName == "ImageLabel" and "ImageColor3") or "BackgroundColor3"] = color;
-    end
-end});
-
--- [Background List]
-local backgroundlist = {
-    Floral = "rbxassetid://5553946656",
-    Flowers = "rbxassetid://6071575925",
-    Circles = "rbxassetid://6071579801",
-    Hearts = "rbxassetid://6073763717"
-};
-
--- [Background List]
-local back = SettingSection:AddList({text = "Background", max = 4, flag = "background", values = {"Floral", "Flowers", "Circles", "Hearts"}, value = "Floral", callback = function(v)
-    if library.main then
-        library.main.Image = backgroundlist[v];
-    end
-end});
-
--- [Background Color Picker]
-back:AddColor({flag = "backgroundcolor", color = Color3.new(), callback = function(color)
-    if library.main then
-        library.main.ImageColor3 = color;
-    end
-end, trans = 1, calltrans = function(trans)
-    if library.main then
-        library.main.ImageTransparency = 1 - trans;
-    end
-end});
-
--- [Tile Size Slider]
-SettingSection:AddSlider({text = "Tile Size", min = 50, max = 500, value = 50, callback = function(size)
-    if library.main then
-        library.main.TileSize = UDim2.new(0, size, 0, size);
-    end
-end});
-
--- [Discord Button]
-SettingSection:AddButton({text = "Discord", callback = function()
-end});
-
--- [Config Box]
-ConfigSection:AddBox({text = "Config Name", skipflag = true});
-
--- [Config List]
-ConfigSection:AddList({text = "Configs", skipflag = true, value = "", flag = "Config List", values = library:GetConfigs()});
-
--- [Create Button]
-ConfigSection:AddButton({text = "Create", callback = function()
-    library:GetConfigs();
-    --writefile(library.foldername .. "/" .. library.flags["Config Name"] .. library.fileext, "{}");
-    library.options["Config List"]:AddValue(library.flags["Config Name"]);
-end});
-
--- [Save Button]
-ConfigSection:AddButton({text = "Save", callback = function()
-    local r, g, b = library.round(library.flags["Menu Accent Color"]);
-    Warning.text = "Are you sure you want to save the current settings to config <font color='rgb(" .. r .. "," .. g .. "," .. b .. ")'>" .. library.flags["Config List"] .. "</font>?";
-    if Warning:Show() then
-        library:SaveConfig(library.flags["Config List"]);
-    end
-end});
-
--- [Load Button]
-ConfigSection:AddButton({text = "Load", callback = function()
-    local r, g, b = library.round(library.flags["Menu Accent Color"]);
-    Warning.text = "Are you sure you want to load config <font color='rgb(" .. r .. "," .. g .. "," .. b .. ")'>" .. library.flags["Config List"] .. "</font>?";
-    if Warning:Show() then
-        library:LoadConfig(library.flags["Config List"]);
-    end
-end});
-
--- [Delete Button]
-ConfigSection:AddButton({text = "Delete", callback = function()
-    local r, g, b = library.round(library.flags["Menu Accent Color"]);
-    Warning.text = "Are you sure you want to delete config <font color='rgb(" .. r .. "," .. g .. "," .. b .. ")'>" .. library.flags["Config List"] .. "</font>?";
-    if Warning:Show() then
-        local config = library.flags["Config List"];
-        --[[if table.find(library:GetConfigs(), config) and isfile(library.foldername .. "/" .. config .. library.fileext) then
-            library.options["Config List"]:RemoveValue(config);
-            --delfile(library.foldername .. "/" .. config .. library.fileext);
-        end]]
-    end
-end});
-
--- [Init] --------------------------------------------------------------------------------------------------------------------------------------------------------------------
-library:Init();
-library:selectTab(library.tabs[1]);
+local Slider4 = Section4:CreateSlider("Tile Scale",0,1,nil,false, function(Value)
+	Window:SetTileScale(Value)
+end)
+Slider4:SetValue(0.5)
