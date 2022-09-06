@@ -133,18 +133,12 @@ local function can_hit(target)
     end
 
     local raycast_result = raycast(workspace, local_player.Character.Head.Position, (target.Character.PrimaryPart.Position - local_player.Character.PrimaryPart.Position).Unit * 1000, raycast_params)
-    local result_part = ((raycast_result and raycast_result.Instance) or dummy_part)
+    local result_part = ((raycast_result and raycast_result.Instance))
 
     raycast_params.FilterDescendantsInstances = ignore_list
 
-    if result_part ~= dummy_part then
-        if result_part.Transparency >= 0.3 then -- ignore low transparency
-            ignored_instances[#ignored_instances + 1] = result_part
-        end
-
-        if result_part.Material == Enum.Material.Glass then -- ignore glass
-            ignored_instances[#ignored_instances + 1] = result_part
-        end
+    if (result_part.Transparency >= 0.3) or (result_part.Material == Enum.Material.Glass) then
+        ignored_instances[#ignored_instances + 1] = result_part
     end
 
     return game.IsDescendantOf(result_part, target.Character)
