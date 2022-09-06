@@ -78,10 +78,8 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
                     print(cont)
                 end
 
-                for _, cont in ipairs(table) do
-                    print(cont)
-                end
-                
+                print(table)
+
                 options.fov_color = Color3.fromRGB(color.R, color.G, color.B)
             end})
         end
