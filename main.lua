@@ -1,3 +1,5 @@
+---@diagnostic disable: undefined-global
+
 -- options
 getgenv().options = {
     aimbot = true,
