@@ -157,7 +157,7 @@ local window = bracket:Window({Name = "vakware but better", Enabled = true, Colo
                 options.fov = number
             end})
 
-            aimbotSection:Colorpicker({Name = "FOV Color", Color = white, Callback = function(color, _)
+            aimbotSection:Colorpicker({Name = "FOV Color", Color = white, Callback = function(_, color)
                 white = color
             end})
 
