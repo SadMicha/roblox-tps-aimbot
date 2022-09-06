@@ -145,7 +145,7 @@ local window = bracket:Window({Name = "vakware but better", Enabled = true, Colo
                 options.aimbot = bool
             end})
             
-            aimbotSection:Keybind({Name = "Aimbot Key", Key = options.mouse_key.Value, Mouse = true, Blacklist = {"W", "A", "S", "D", "RightControl"}, Callback = function(_, key)
+            aimbotSection:Keybind({Name = "Aimbot Key", Key = options.mouse_key.Name, Mouse = true, Blacklist = {"W", "A", "S", "D", "RightControl"}, Callback = function(_, key)
                 options.mouse_key = key
             end})
 
@@ -183,7 +183,7 @@ local window = bracket:Window({Name = "vakware but better", Enabled = true, Colo
 
     local uiTab = window:Tab({Name = "UI Settings"}) do
         local uiSection = uiTab:Section({Name = "General"}) do
-            uiSection:Keybind({Name = "UI Toggle Key", Key = options.ui_toggle_key, Mouse = false, Blacklist = {"W", "A", "S", "D"}, Callback = function(_, key)
+            uiSection:Keybind({Name = "UI Toggle Key", Key = options.ui_toggle_key.Name, Mouse = false, Blacklist = {"W", "A", "S", "D"}, Callback = function(_, key)
                 options.ui_toggle_key = key
             end})
         end
