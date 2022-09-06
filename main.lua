@@ -45,9 +45,8 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
                 options.aimbot_toggle_key = key
             end})
             
-            SettingSection:Keybind({Name = "Aimbot Key", Key = options.aimbot_key, Mouse = true, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(bool, key)
-                options.aimbot_key = bool
-                print(bool, key)
+            SettingSection:Keybind({Name = "Aimbot Key", Key = options.aimbot_key, Mouse = true, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(key, bool)
+                options.aimbot_key = key
             end})
 
             SettingSection:Slider({Name = "Smoothness", Min = 0, Max = 10, Value = options.smoothness, Precise = 1, Unit = "", Callback = function(number)
@@ -262,6 +261,18 @@ uis.InputBegan:Connect(function(input, gameProcessedEvent)
     if not gameProcessedEvent then
         if input.KeyCode[objects.ui_toggle_key] then
             Window:Toggle(objects.ui_visible)
+        end
+
+        if input.UserInputType[objects.aimbot_key] or input.KeyCode[options.aimbot_key] then
+            startAim = true
+        end
+    end
+end)
+
+uis.InputEnded:Connect(function(input, gameProcessedEvent)
+    if not gameProcessedEvent then
+        if input.UserInputType[objects.aimbot_key] or input.KeyCode[options.aimbot_key] then
+            startAim = false
         end
     end
 end)
