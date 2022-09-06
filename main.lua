@@ -80,9 +80,9 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
         local SettingSection = Settings:Section({Name = "Settings", Side = "Left"}) do
             SettingSection:Toggle({Name = "UI Visisble", Value = options.ui_visible, Callback = function(bool)
                 options.ui_visible = bool
-                print(key)
             end}):Keybind({Key = options.ui_toggle_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(bool, key)
                 options.ui_toggle_key = key
+                print(key)
             end})
         end
     end
