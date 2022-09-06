@@ -270,14 +270,14 @@ local function stepped()
     if (tick() - last_tick) > (10 / 1000) then
         last_tick = tick()
 
-        add_or_update_instance(aiming, "fov_circle_object", {
+        --[[add_or_update_instance(aiming, "fov_circle_object", {
             Visible = options.show_fov,
             Thickness = 1,
             Radius = options.fov,
             Position = Vector2.new(mouse.X, mouse.Y + 36),
             Color = options.fov_color,
             instance = "Circle",
-        })
+        })]]
 
         -- code
         if options.aimbot and startAim then
