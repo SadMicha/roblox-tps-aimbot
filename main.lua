@@ -136,9 +136,9 @@ local options = {
 }
 
 -- ui stuff
-
 local bracket = loadstring(game:HttpGet("https://raw.githubusercontent.com/AlexR32/Bracket/main/BracketV32.lua"))()
 local window = bracket:Window({Name = "vakware but better", Enabled = true, Color = Color3.new(255, 0, 0), Size = UDim2.new(0,496,0,496), Position = UDim2.new(0.5,-248,0.5,-248)}) do
+    window:Toggle(options.ui_visible)
     local aimbotTab = window:Tab({Name = "Aimbot"}) do
         local aimbotSection = aimbotTab:Section({Name = "Aimbot Section", Side = "Left"}) do
             aimbotSection:Toggle({Name = "Aimbot", Value = options.aimbot, Callback = function(bool)
