@@ -236,8 +236,16 @@ local function closest_player()
     for _, players in ipairs(playerService:GetPlayers()) do
         if players == local_player then return end
 
-        if (mouse.Hit.Position - players.Character.PrimaryPart.Position).Magnitude <= options.max_distance and not check_same_team(players) then
-            if can_hit(players) and is_in_fov(players.Character.PrimaryPart.Position) and players.Character.Humanoid.Health > 0 then
+        if (mouse.Hit.Position - players.Character.PrimaryPart.Position).Magnitude <= options.max_distance then
+            if options.team_check then
+                if check_same_team(players) then return end
+            end
+
+            if options.wall_check then
+                if not can_hit(players) then return end
+            end
+            
+            if is_in_fov(players.Character.PrimaryPart.Position) and players.Character.Humanoid.Health > 0 then
                 closest = players
             end
         end
@@ -276,10 +284,12 @@ local function stepped()
         -- code
         if options.aimbot and startAim then
             local closest = closest_player()
-            local aim_part = get_aim_part(closest)
-            if aim_part and closest then
-                local real_pos = world_to_view_point(aim_part)
-                mousemoverel((real_pos.X - mouse.X) / options.smoothness, (real_pos.Y - (mouse.Y + 36)) / options.smoothness)
+            if closest then
+                local aim_part = get_aim_part(closest)
+                if aim_part then
+                    local real_pos = world_to_view_point(aim_part)
+                    mousemoverel((real_pos.X - mouse.X) / options.smoothness, (real_pos.Y - (mouse.Y + 36)) / options.smoothness)
+                end
             end
         end
     end
