@@ -66,8 +66,6 @@ local mouse = local_player:GetMouse()
 
 local cam = find_first_child_of_class(workspace, "Camera")
 
-local screen_size = cam.ViewportSize
-
 local enum_rft_blk = Enum.RaycastFilterType.Blacklist
 local glass = Enum.Material.Glass
 
@@ -99,6 +97,8 @@ local options = {
     -- ui settings (sort of ui)
     fov_circle = true,
     aiming_at = true,
+    ui_toggle_key = Enum.KeyCode["RightControl"],
+    ui_visible = true,
 
     -- aimbot settings
     aimbot = true,
@@ -157,8 +157,8 @@ local window = bracket:Window({Name = "vakware but better", Enabled = true, Colo
                 options.fov = number
             end})
 
-            aimbotSection:Colorpicker({Name = "FOV Color", Color = options.white, Callback = function(color, _)
-                options.white = color
+            aimbotSection:Colorpicker({Name = "FOV Color", Color = white, Callback = function(color, _)
+                white = color
             end})
 
             aimbotSection:Slider({Name = "Smoothness", Min = 0, Max = 10, Value = options.smoothness, Precise = 1, Unit = "", Callback = function(number)
@@ -167,6 +167,24 @@ local window = bracket:Window({Name = "vakware but better", Enabled = true, Colo
             
             aimbotSection:Toggle({Name = "Triggerbot", Value = options.triggerbot, Callback = function(bool)
                 options.triggerbot = bool
+            end})
+        end
+
+        local utils = aimbotTab:Section({"Utils", Side = "Right"}) do
+            utils:Toggle({Name = "Team check", Value = options.team_check, Callback = function(bool)
+                options.team_check = bool
+            end})
+
+            utils:Toggle({Name = "Wall Check", Value = options.wall_check, Callback = function(bool)
+                options.wall_check = bool
+            end})
+        end
+    end
+
+    local uiTab = window:Tab({Name = "UI Settings"}) do
+        local uiSection = uiTab:Section({Name = "General"}) do
+            uiSection:Keybind({Name = "UI Toggle Key", Key = options.ui_toggle_key, Mouse = false, Blacklist = {"W", "A", "S", "D"}, Callback = function(_, key)
+                options.ui_toggle_key = key
             end})
         end
     end
@@ -358,6 +376,11 @@ getgenv().player_removed = players.ChildRemoved:Connect(refresh)
 getgenv().input_began = uis.InputBegan:Connect(function(input)
     if input.UserInputType == options.mouse_key or input.KeyCode == options.mouse_key then
         start_aim = true
+    end
+
+    if input.KeyCode == options.ui_toggle_key then
+        options.ui_visible = not options.ui_visible
+        window:Toggle(options.ui_visible)
     end
 end)
 
