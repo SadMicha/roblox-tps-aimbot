@@ -1,7 +1,7 @@
 local Bracket = loadstring(game:HttpGet("https://raw.githubusercontent.com/AlexR32/Bracket/main/BracketV32.lua"))()
 
 local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Color = Color3.new(1,0.5,0.25), Size = UDim2.new(0,496,0,496), Position = UDim2.new(0.5,-248,0.5,-248)}) do
-    local Aimbot = Window:Tav({Name = "Aimbot"}) do
+    local Aimbot = Window:Tab({Name = "Aimbot"}) do
         -- settings
         Aimbot:Divider({Text = "Settings", Side = "Left"})
         local SettingSection = Aimbot:Section({Name = "Settings", Side = "Left"}) do
