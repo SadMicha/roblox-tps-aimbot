@@ -102,7 +102,7 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
         local SettingSection = Settings:Section({Name = "Settings", Side = "Left"}) do
             SettingSection:Keybind({Key = options.ui_toggle_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(bool, key)
                 options.ui_toggle_key = key
-                print(options.ui_toggle_key)
+                print(bool)
             end})
         end
     end
