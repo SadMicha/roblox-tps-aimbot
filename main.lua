@@ -77,7 +77,6 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
             end})
 
             Visual:Colorpicker({Name = "FOV Color", Color = options.fov_color, Callback = function(color, table)
-                print(table)
                 options.fov_color = table
             end})
         end
@@ -101,10 +100,7 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
     local Settings = Window:Tab({Name = "UI Settings"}) do
         Settings:Divider({Text = "Settings", Side = "Left"})
         local SettingSection = Settings:Section({Name = "Settings", Side = "Left"}) do
-            SettingSection:Toggle({Name = "UI Visible", Value = options.ui_visible, Callback = function(bool)
-                options.ui_visible = bool
-                Window:Toggle(options.ui_visible)
-            end}):Keybind({Key = options.ui_toggle_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(bool, key)
+            SettingSection:Keybind({Name = "UI Toggle", Key = options.ui_toggle_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(key, bool)
                 options.ui_toggle_key = key
             end})
         end
@@ -237,8 +233,16 @@ local function closest_player()
     for _, players in ipairs(playerService:GetPlayers()) do
         if players == local_player then return end
 
-        if (mouse.Hit.Position - players.Character.PrimaryPart.Position).Magnitude <= options.max_distance and not check_same_team(players) then
-            if can_hit(players) and is_in_fov(players.Character.PrimaryPart.Position) and players.Character.Humanoid.Health > 0 then
+        if (mouse.Hit.Position - players.Character.PrimaryPart.Position).Magnitude <= options.max_distance then
+            if options.team_check then
+                if check_same_team(players) then return end
+            end
+
+            if options.wall_check then
+                if not can_hit(players) then return end
+            end
+            
+            if is_in_fov(players.Character.PrimaryPart.Position) and players.Character.Humanoid.Health > 0 then
                 closest = players
             end
         end
@@ -260,30 +264,42 @@ local function get_aim_part(target)
     return target.Character.HumanoidRootPart.Position
 end
 
-local last_tick = tick()
+
+local last_tick = 0
 local function stepped()
     if (tick() - last_tick) > (10 / 1000) then
         last_tick = tick()
 
-        add_or_update_instance(aiming, "fov_circle_object", {
+        --[[add_or_update_instance(aiming, "fov_circle_object", {
             Visible = options.show_fov,
             Thickness = 1,
             Radius = options.fov,
             Position = Vector2.new(mouse.X, mouse.Y + 36),
             Color = options.fov_color,
             instance = "Circle",
-        })
+        })]]
 
         -- code
         if options.aimbot and startAim then
             local closest = closest_player()
-            local aim_part = get_aim_part(closest)
-            if aim_part and closest then
-                local real_pos = world_to_view_point(aim_part)
-                mousemoverel((real_pos.X - mouse.X) / options.smoothness, (real_pos.Y - (mouse.Y + 36)) / options.smoothness)
+            if closest then
+                local aim_part = get_aim_part(closest)
+                if aim_part then
+                    local real_pos = world_to_view_point(aim_part)
+                    mousemoverel((real_pos.X - mouse.X) / options.smoothness, (real_pos.Y - (mouse.Y + 36)) / options.smoothness)
+                end
             end
         end
     end
 end
+
+uis.InputBegan:Connect(function(input, gameProcessedEvent)
+    if not gameProcessedEvent then
+        if input.KeyCode == options.ui_toggle_key then
+            options.ui_visible = not options.ui_visible
+            Window:Toggle(options.ui_visible)
+        end
+    end
+end)
 
 run_service:BindToRenderStep(update_loop_stepped_name, 199, stepped)
