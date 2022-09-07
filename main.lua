@@ -101,8 +101,7 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
         Settings:Divider({Text = "Settings", Side = "Left"})
         local SettingSection = Settings:Section({Name = "Settings", Side = "Left"}) do
             SettingSection:Keybind({Name = "UI Toggle", Key = options.ui_toggle_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(bool, key)
-                options.ui_toggle_key = key
-                print(bool, key)
+                options.ui_toggle_key = bool
             end})
         end
     end
@@ -296,7 +295,7 @@ end
 
 uis.InputBegan:Connect(function(input, gameProcessedEvent)
     if not gameProcessedEvent then
-        if input.KeyCode.Value == options.ui_toggle_key then
+        if input.KeyCode == options.ui_toggle_key then
             options.ui_visible = not options.ui_visible
             Window:Toggle(options.ui_visible)
         end
