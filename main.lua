@@ -3,8 +3,8 @@
 -- options
 getgenv().options = {
     aimbot = true,
-    aimbot_toggle_key = "NONE",
-    aimbot_key = "NONE",
+    aimbot_toggle_key = Enum.KeyCode.E.Name,
+    aimbot_key = Enum.UserInputType.MouseButton1.Name,
     fov = 300,
     show_fov = true,
     fov_color = Color3.new(1, 1, 1),
@@ -15,7 +15,7 @@ getgenv().options = {
     team_check = true,
     wall_check = true,
 
-    ui_toggle_key = "NONE",
+    ui_toggle_key = Enum.KeyCode.RightControl.Name,
     ui_visible = true
 }
 
@@ -43,13 +43,12 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
         local SettingSection = Aimbot:Section({Name = "Settings", Side = "Left"}) do
             SettingSection:Toggle({Name = "Aimbot", Value = options.aimbot, Callback = function(bool)
                 options.aimbot = bool
-            end}):Keybind({Key = options.aimbot_toggle_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(bool, key)
+            end}):Keybind({Key = options.aimbot_toggle_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(key, boolk)
                 options.aimbot_toggle_key = key
             end})
             
             SettingSection:Keybind({Name = "Aimbot Key", Key = options.aimbot_key, Mouse = true, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(key, bool)
                 options.aimbot_key = key
-                startAim = bool
             end})
 
             SettingSection:Slider({Name = "Smoothness", Min = 0, Max = 10, Value = options.smoothness, Precise = 1, Unit = "", Callback = function(number)
@@ -102,7 +101,6 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
         local SettingSection = Settings:Section({Name = "Settings", Side = "Left"}) do
             SettingSection:Keybind({Name = "UI Toggle", Key = options.ui_toggle_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(key, bool)
                 options.ui_toggle_key = key
-                print(options.ui_toggle_key)
             end})
         end
     end
@@ -121,6 +119,8 @@ local aiming = {
 
 local ignored_instances = {}
 local function can_hit(target)
+    if options.wall_check == false then return true end
+
     local raycast_params = RaycastParams.new()
     raycast_params.FilterType = Enum.RaycastFilterType.Blacklist
     raycast_params.IgnoreWater = true
@@ -131,7 +131,7 @@ local function can_hit(target)
         ignore_list[#ignore_list + 1] = val
     end
 
-    local raycast_result = raycast(workspace, local_player.Character.Head.Position, (target.Character.PrimaryPart.Position - local_player.Character.PrimaryPart.Position).Unit * 1000, raycast_params)
+    local raycast_result = workspace.Raycast(workspace, local_player.Character.Head.Position, (target.Character.PrimaryPart.Position - local_player.Character.PrimaryPart.Position).Unit * 1000, raycast_params)
     local result_part = ((raycast_result and raycast_result.Instance))
 
     raycast_params.FilterDescendantsInstances = ignore_list
@@ -144,6 +144,7 @@ local function can_hit(target)
 end
 
 local function check_same_team(target)
+    if options.team_check == false then return false end
     local placeId = game.PlaceId
 
     if placeId == 5361853069 then -- Snow Core
@@ -225,25 +226,18 @@ local function world_to_view_point(pos)
 end
 
 local function is_in_fov(pos)
-    return ((pos.x - aiming.fov_circle_object.Position.X) ^ 2 + (pos.y - aiming.fov_circle_object.Position.Y) ^ 2 <= aiming.fov_circle_object.Radius ^ 2)
+    local real_pos = world_to_view_point(pos)
+    return ((real_pos.X - aiming.fov_circle_object.Position.X) ^ 2 + (real_pos.Y - aiming.fov_circle_object.Position.Y) ^ 2 <= aiming.fov_circle_object.Radius ^ 2)
 end
 
 local function closest_player()
     local closest = nil
 
     for _, players in ipairs(playerService:GetPlayers()) do
-        if players == local_player then return end
+        if players == local_player then continue end
 
         if (mouse.Hit.Position - players.Character.PrimaryPart.Position).Magnitude <= options.max_distance then
-            if options.team_check then
-                if check_same_team(players) then return end
-            end
-
-            if options.wall_check then
-                if not can_hit(players) then return end
-            end
-            
-            if is_in_fov(players.Character.PrimaryPart.Position) and players.Character.Humanoid.Health > 0 then
+            if can_hit(players) and not check_same_team(players) and is_in_fov(players.Character.PrimaryPart.Position) and players.Character.Humanoid.Health > 0 then
                 closest = players
             end
         end
@@ -271,19 +265,23 @@ local function stepped()
     if (tick() - last_tick) > (10 / 1000) then
         last_tick = tick()
 
-        --[[add_or_update_instance(aiming, "fov_circle_object", {
+        add_or_update_instance(aiming, "fov_circle_object", {
             Visible = options.show_fov,
             Thickness = 1,
             Radius = options.fov,
             Position = Vector2.new(mouse.X, mouse.Y + 36),
             Color = options.fov_color,
             instance = "Circle",
-        })]]
+        })
 
         -- code
         if options.aimbot and startAim then
             local closest = closest_player()
+            if closest ~= nil then
+                print("closest Object", closest)
+            end
             if closest then
+                print("closest ", closest.Name)
                 local aim_part = get_aim_part(closest)
                 if aim_part then
                     local real_pos = world_to_view_point(aim_part)
@@ -296,9 +294,23 @@ end
 
 uis.InputBegan:Connect(function(input, gameProcessedEvent)
     if not gameProcessedEvent then
-        if input.KeyCode == options.ui_toggle_key then
+        if input.KeyCode.Name == options.ui_toggle_key then
             options.ui_visible = not options.ui_visible
-            Window:Toggle(options.ui_visible)
+            if options.ui_visible ~= nil then
+                Window:Toggle(options.ui_visible)
+            end
+        elseif input.KeyCode.Name == options.aimbot_toggle_key then
+            options.aimbot = not options.aimbot
+        elseif input.UserInputType.Name == options.aimbot_key then
+            startAim = true
+        end
+    end
+end)
+
+uis.InputEnded:Connect(function(input, gameProcessedEvent)
+    if not gameProcessedEvent then
+        if input.UserInputType.Name == options.aimbot_key then
+            startAim = false
         end
     end
 end)
