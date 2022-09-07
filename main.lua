@@ -1,6 +1,39 @@
+local HttpService = game:GetService("HttpService")
 ---@diagnostic disable: undefined-global
 
 -- options
+local function getConfigs()
+    if not isfolder("vakware but better") then makefolder("vakware but better") end
+    if not isfolder("vakware but better\\Configs") then makefolder("vakware but better\\Configs") end
+    if not isfile("vakware but better\\Configs\\" .. name .. ".json") then writefile("vakware but better\\Configs\\" .. name .. ".json", "") end
+
+    local Configs = {}
+    for Index,File in pairs(listfiles("vakware but better\\Configs") or {}) do
+        File = File:gsub("vakware but better\\Configs\\","")
+        File = File:gsub(".json","")
+        Configs[Index] = File
+    end
+    return Configs
+end
+
+local function loadConfig(name)
+    if not isfolder("vakware but better") then makefolder("vakware but better") end
+    if not isfolder("vakware but better\\Configs") then makefolder("vakware but better\\Configs") end
+    if not isfile("vakware but better\\Configs\\" .. name .. ".json") then writefile("vakware but better\\Configs\\" .. name .. ".json", "") end
+
+    if table.find(getConfigs(), name) then
+        local decodeJSON = HttpService:JSONDecode(readfile("vakware but better\\Configs\\" .. name .. ".json"))
+        for i, e in pairs(options) do
+            print(i, e)
+            print(decodeJSON)
+        end
+    end
+end
+
+local function saveConfig(name)
+
+end
+
 getgenv().options = {
     aimbot = true,
     aimbot_toggle_key = Enum.KeyCode.E.Name,
@@ -10,6 +43,7 @@ getgenv().options = {
     fov_color = Color3.new(1, 1, 1),
     smoothness = 1,
     triggerbot = false,
+    triggerbot_key = Enum.KeyCode.X.Name,
     max_distance = 1000,
 
     team_check = true,
@@ -45,11 +79,11 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
                 options.aimbot = bool
             end}):Keybind({Key = options.aimbot_toggle_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(key, boolk)
                 options.aimbot_toggle_key = key
-            end})
+            end}):SetValue(options.aimbot_toggle_key)
             
             SettingSection:Keybind({Name = "Aimbot Key", Key = options.aimbot_key, Mouse = true, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(key, bool)
                 options.aimbot_key = key
-            end})
+            end}):SetValue(options.aimbot_key)
 
             SettingSection:Slider({Name = "Smoothness", Min = 0, Max = 10, Value = options.smoothness, Precise = 1, Unit = "", Callback = function(number)
                 options.smoothness = number
@@ -61,7 +95,9 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
 
             SettingSection:Toggle({Name = "Triggerbot", Value = options.triggerbot, Callback = function(bool)
                 options.triggerbot = bool
-            end})
+            end}):Keybind({Name = "Triggerbot Key", Key = options.triggerbot_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(key, bool)
+                options.triggerbot_key = key
+            end}):SetValue(options.triggerbot_key)
         end
 
         -- visual
@@ -101,7 +137,7 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = true, Colo
         local SettingSection = Settings:Section({Name = "Settings", Side = "Left"}) do
             SettingSection:Keybind({Name = "UI Toggle", Key = options.ui_toggle_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(key, bool)
                 options.ui_toggle_key = key
-            end})
+            end}):SetValue(options.ui_toggle_key)
         end
     end
 end
@@ -113,9 +149,12 @@ local local_player = playerService.LocalPlayer
 local camera = workspace.CurrentCamera
 local mouse = local_player:GetMouse()
 
-local aiming = {
-    fov_circle_object = nil
-}
+local fov_circle_object = Drawing.new("Circle")
+fov_circle_object.Visible = options.show_fov
+fov_circle_object.Radius = options.fov
+fov_circle_object.Color = options.fov_color
+fov_circle_object.Thickness = 1
+fov_circle_object.Position = Vector2.new(mouse.X, mouse.Y + 36)
 
 local ignored_instances = {}
 local function can_hit(target)
@@ -131,16 +170,19 @@ local function can_hit(target)
         ignore_list[#ignore_list + 1] = val
     end
 
-    local raycast_result = workspace.Raycast(workspace, local_player.Character.Head.Position, (target.Character.PrimaryPart.Position - local_player.Character.PrimaryPart.Position).Unit * 1000, raycast_params)
+    local raycast_result = workspace.Raycast(workspace, local_player.Character.Head.Position, (target.Character.Head.Position - local_player.Character.Head.Position).Unit * 1000, raycast_params)
     local result_part = ((raycast_result and raycast_result.Instance))
 
     raycast_params.FilterDescendantsInstances = ignore_list
 
-    if (result_part.Transparency >= 0.3) or (result_part.Material == Enum.Material.Glass) then
-        ignored_instances[#ignored_instances + 1] = result_part
+    if result_part ~= nil then
+        if (result_part.Transparency >= 0.3) or (result_part.Material == Enum.Material.Glass) then
+            ignored_instances[#ignored_instances + 1] = result_part
+        end
+        return result_part:IsDescendantOf(target.Character)
     end
 
-    return game.IsDescendantOf(result_part, target.Character)
+    return false
 end
 
 local function check_same_team(target)
@@ -188,36 +230,6 @@ local function check_same_team(target)
     return false
 end
 
-local function new_drawing(class_name)
-    return function(props)
-        local inst = Drawing.new(class_name)
-
-        for idx, val in pairs(props) do
-            if idx ~= "instance" then
-                inst[idx] = val
-            end
-        end
-        
-        return inst
-    end
-end
-
-local function add_or_update_instance(table, child, props)
-    local inst = table[child]
-    if not inst then
-        table[child] = new_drawing(props.instance)(props)
-        return inst
-    end
-
-    for idx, val in pairs(props) do
-        if idx ~= "instance" then
-            inst[idx] = val
-        end
-    end
-
-    return inst
-end
-
 local function world_to_view_point(pos)
     local vector, inViewport = camera:WorldToViewportPoint(pos)
     if inViewport then
@@ -227,16 +239,18 @@ end
 
 local function is_in_fov(pos)
     local real_pos = world_to_view_point(pos)
-    return ((real_pos.X - aiming.fov_circle_object.Position.X) ^ 2 + (real_pos.Y - aiming.fov_circle_object.Position.Y) ^ 2 <= aiming.fov_circle_object.Radius ^ 2)
+    if real_pos ~= nil and real_pos.X ~= nil and real_pos.Y ~= nil then
+        return ((real_pos.X - fov_circle_object.Position.X) ^ 2 + (real_pos.Y - fov_circle_object.Position.Y) ^ 2 <= fov_circle_object.Radius ^ 2)
+    end
 end
 
 local function closest_player()
     local closest = nil
 
-    for _, players in ipairs(playerService:GetPlayers()) do
+    for _, players in pairs(playerService:GetPlayers()) do
         if players == local_player then continue end
 
-        if (mouse.Hit.Position - players.Character.PrimaryPart.Position).Magnitude <= options.max_distance then
+        if (players ~= nil and players.Character ~= nil and players.Character.PrimaryPart ~= nil) and ((mouse.Hit.Position - players.Character.PrimaryPart.Position).Magnitude < options.max_distance) then
             if can_hit(players) and not check_same_team(players) and is_in_fov(players.Character.PrimaryPart.Position) and players.Character.Humanoid.Health > 0 then
                 closest = players
             end
@@ -260,28 +274,22 @@ local function get_aim_part(target)
 end
 
 
+
 local last_tick = 0
 local function stepped()
     if (tick() - last_tick) > (10 / 1000) then
         last_tick = tick()
-
-        add_or_update_instance(aiming, "fov_circle_object", {
-            Visible = options.show_fov,
-            Thickness = 1,
-            Radius = options.fov,
-            Position = Vector2.new(mouse.X, mouse.Y + 36),
-            Color = options.fov_color,
-            instance = "Circle",
-        })
-
+        
+        fov_circle_object.Visible = options.show_fov
+        fov_circle_object.Radius = options.fov
+        fov_circle_object.Color = options.fov_color
+        fov_circle_object.Thickness = 1
+        fov_circle_object.Position = Vector2.new(mouse.X, mouse.Y + 36)
+        
         -- code
         if options.aimbot and startAim then
             local closest = closest_player()
-            if closest ~= nil then
-                print("closest Object", closest)
-            end
             if closest then
-                print("closest ", closest.Name)
                 local aim_part = get_aim_part(closest)
                 if aim_part then
                     local real_pos = world_to_view_point(aim_part)
@@ -296,13 +304,13 @@ uis.InputBegan:Connect(function(input, gameProcessedEvent)
     if not gameProcessedEvent then
         if input.KeyCode.Name == options.ui_toggle_key then
             options.ui_visible = not options.ui_visible
-            if options.ui_visible ~= nil then
-                Window:Toggle(options.ui_visible)
-            end
+            Window:Toggle(options.ui_visible)
         elseif input.KeyCode.Name == options.aimbot_toggle_key then
             options.aimbot = not options.aimbot
         elseif input.UserInputType.Name == options.aimbot_key then
             startAim = true
+        elseif input.KeyCode.Name == options.triggerbot_key then
+            options.triggerbot = not options.triggerbot
         end
     end
 end)
