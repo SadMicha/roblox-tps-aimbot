@@ -489,7 +489,7 @@ local function stepped()
                         if chosen.visible then
                             local x = (chosen.screen.X - mouse.X) + math.random(10, 20) / (smoothness * 2)
                             local y = (chosen.screen.Y - (mouse.Y + 36)) + math.random(10, 20) / (smoothness * 2)
-                            mousemoverel(x + math.random(0, 0.5), y + math.random(0, 0.5))
+                            mousemoverel(x, y)
                         end
                     end
                     if options.triggerbot then
