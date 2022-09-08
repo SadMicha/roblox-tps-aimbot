@@ -39,7 +39,6 @@ getgenv().render_loop_stepped_name = renderloop_stepped_name or random_string(ma
 getgenv().update_loop_stepped_name = update_loop_stepped_name or random_string(math_random(15, 35))
 
 -- services
-local ContentProvider = game:GetService("ContentProvider")
 local players = game:GetService("Players")
 local run_service = game:GetService("RunService")
 local uis = game:GetService("UserInputService")
@@ -454,7 +453,7 @@ local function stepped()
                     if obj:IsA("BasePart") then
                         local part_screen, part_in_screen = to_screen(obj.Position)
 
-                        if can_hit(mouse.Hit.Position, obj) and (part_in_screen) and (is_inside_fov(part_screen)) then
+                        if can_hit(local_player.Character.PrimaryPart.Position, obj) and (part_in_screen) and (is_inside_fov(part_screen)) then
                             local set = {
                                 part = obj,
                                 screen = part_screen,
