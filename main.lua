@@ -357,7 +357,8 @@ getgenv().player_added = players.ChildAdded:Connect(refresh)
 getgenv().player_removed = players.ChildRemoved:Connect(refresh)
 
 -- aimbot triggers
-getgenv().input_began = uis.InputBegan:Connect(function(input)
+getgenv().input_began = uis.InputBegan:Connect(function(input, gpe)
+    if gpe then return end
     if input.UserInputType.Name == options.aimbot_key then
 		start_aim = true
     elseif input.KeyCode.Name == options.ui_toggle_key then
@@ -375,7 +376,8 @@ getgenv().input_began = uis.InputBegan:Connect(function(input)
     end
 end)
 
-getgenv().input_ended = uis.InputEnded:Connect(function(input)
+getgenv().input_ended = uis.InputEnded:Connect(function(input, gpe)
+    if gpe then return end
     if input.UserInputType.Name == options.aimbot_key then
         start_aim = false
     end
@@ -406,6 +408,8 @@ local function stepped()
             if plr == local_player then continue end
             if options.ignore_people[plr.Name] then continue end
             if options.team_check and check_team(plr) then continue end
+            if not health_check(plr) then return end
+            if not self_health_check() then return end
 
             local plr_char = plr.Character
             local root_part =
@@ -444,9 +448,6 @@ local function stepped()
 
         local function run_aimbot(plr_offset)
             local char = idx_sorted[plr_offset]
-            
-            if not health_check(plr) then return end
-            if not self_health_check() then return end
 
             if char then
                 local children = char:GetChildren()
@@ -497,7 +498,7 @@ local function stepped()
                             mouse1release()
                         end
                     end
-                else
+                end
             end
         end
 
