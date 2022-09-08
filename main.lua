@@ -448,7 +448,6 @@ local function stepped()
 
         local function run_aimbot(plr_offset)
             local char = idx_sorted[plr_offset]
-
             if char then
                 local children = char:GetChildren()
                 local parts = {}
@@ -487,8 +486,8 @@ local function stepped()
                     if start_aim then
                         local smoothness = options.smoothness
                         if chosen.visible then
-                            local x = ((chosen.screen.X - mouse.X) + math.random(10, 20)) / (smoothness * 2)
-                            local y = ((chosen.screen.Y - (mouse.Y + 36)) + math.random(10, 20)) / (smoothness * 2)
+                            local x = ((chosen.screen.X - mouse.X) + math.random(1, 5)) / (smoothness * 2)
+                            local y = ((chosen.screen.Y - (mouse.Y + 36)) + math.random(1, 5)) / (smoothness * 2)
                             mousemoverel(x, y)
                         end
                     end
