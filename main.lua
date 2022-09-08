@@ -487,7 +487,10 @@ local function stepped()
                     if start_aim then
                         local smoothness = options.smoothness
                         if chosen.visible then
-                            mousemoverel((chosen.screen.X - mouse.X) + math.random(10, 100) / smoothness, (chosen.screen.Y - (mouse.Y + 36)) + math.random(10, 100) / smoothness)
+                            local x = (chosen.screen.X - mouse.X) + math.random(10, 20) / smoothness
+                            local y = (chosen.screen.Y - (mouse.Y + 36)) + math.random(10, 20) / smoothness
+                            mousemoverel(x, y)
+                            mousemoverel(x + math.random(0, 0.5), y + math.random(0, 0.5))
                         end
                     end
                     if options.triggerbot then
