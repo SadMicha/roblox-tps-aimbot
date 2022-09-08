@@ -39,6 +39,7 @@ getgenv().render_loop_stepped_name = renderloop_stepped_name or random_string(ma
 getgenv().update_loop_stepped_name = update_loop_stepped_name or random_string(math_random(15, 35))
 
 -- services
+local ContentProvider = game:GetService("ContentProvider")
 local players = game:GetService("Players")
 local run_service = game:GetService("RunService")
 local uis = game:GetService("UserInputService")
@@ -59,7 +60,6 @@ drawing_new("Square").Visible = false -- initialize drawing lib
 
 local refresh_que = false
 local start_aim = false
-local aim_head = false
 
 getgenv().options = {
     -- internal
@@ -408,8 +408,8 @@ local function stepped()
             if plr == local_player then continue end
             if options.ignore_people[plr.Name] then continue end
             if options.team_check and check_team(plr) then continue end
-            if not health_check(plr) then return end
-            if not self_health_check() then return end
+            if not health_check(plr) then continue end
+            if not self_health_check() then continue end
 
             local plr_char = plr.Character
             local root_part =
@@ -422,12 +422,10 @@ local function stepped()
                 or plr_char:FindFirstChild("Part")
 
             local head = plr_char:FindFirstChild("Head") or root_part
+            if not head then continue end
             if not head:IsA("BasePart") then continue end
             local mag = (head.Position - mouse.Hit.Position).Magnitude
-
-            if options.aimbot then
-				closers_chars[mag] = plr_char
-            end
+            closers_chars[mag] = plr_char
         end
 
         if not options.aimbot then return end
@@ -456,7 +454,7 @@ local function stepped()
                     if obj:IsA("BasePart") then
                         local part_screen, part_in_screen = to_screen(obj.Position)
 
-                        if can_hit(local_player.Character.Head.Position, obj) and (part_in_screen) and (is_inside_fov(part_screen)) then
+                        if can_hit(mouse.Hit.Position, obj) and (part_in_screen) and (is_inside_fov(part_screen)) then
                             local set = {
                                 part = obj,
                                 screen = part_screen,
@@ -471,32 +469,34 @@ local function stepped()
 
                 local chosen = nil
 
-                if parts["Head"] and aim_head then
-                    chosen = parts["Head"]
+                local torso = parts["Torso"] or parts["UpperTorso"] or parts["LowerTorso"]
+                if torso then
+                    chosen = torso
                 else
-                    local torso = parts["Torso"] or parts["UpperTorso"] or parts["LowerTorso"]
-                    if torso then
-                        chosen = torso
-                    else
-                        chosen = parts["Head"] or parts[0]
-                    end
+                    chosen = parts["Head"] or parts[0]
                 end
 
                 if chosen then
                     if start_aim then
                         local smoothness = options.smoothness
                         if chosen.visible then
-                            local x = ((chosen.screen.X - mouse.X) + math.random(1, 5)) / (smoothness * 2)
-                            local y = ((chosen.screen.Y - (mouse.Y + 36)) + math.random(1, 5)) / (smoothness * 2)
-                            mousemoverel(x, y)
+                            local mouseLocation = uis:GetMouseLocation()
+                            local endX = (chosen.screen.X - mouseLocation.X) / (smoothness * 2)
+                            local endY = (chosen.screen.Y - mouseLocation.Y) / (smoothness * 2)
+                            mousemoverel(endX, endY)
                         end
                     end
+
                     if options.triggerbot then
-                        if hitting_what(local_player.Character.Head.CFrame):IsDescendantOf(chosen.part.Parent) then
+                        if (hitting_what(mouse.Hit):IsDescendantOf(chosen.part.Parent)) then
                             mouse1press()
                         else
                             mouse1release()
                         end
+                    end
+                else
+                    if options.triggerbot then
+                        mouse1release()
                     end
                 end
             end
