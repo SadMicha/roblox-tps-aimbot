@@ -78,7 +78,7 @@ getgenv().options = {
 
     -- aimbot
     aimbot = true,
-    aimbot_toggle_key = Enum.KeyCode.E.Name,
+    aimbot_toggle_key = Enum.KeyCode["E"].Name,
     smoothness = 3,
 
     ignore_people = {
@@ -86,7 +86,7 @@ getgenv().options = {
     },
 
     triggerbot = false,
-    triggerbot_key = Enum.KeyCode.X.Name,
+    triggerbot_key = Enum.KeyCode["X"].Name,
     aimbot_key = Enum.UserInputType["MouseButton1"].Name,
 
     -- ui
@@ -121,7 +121,7 @@ loadConfig()
 
 local Bracket = loadstring(game:HttpGet("https://raw.githubusercontent.com/AlexR32/Bracket/main/BracketV32.lua"))()
 local Window = Bracket:Window({Name = "vakware but better", Enabled = options.ui_toggle, Color = Color3.new(1, 0, 0), Size = UDim2.new(0,496,0,496), Position = UDim2.new(0.5,-248,0.5,-248)}) do
-    -- aimbot
+    Window.Background = imageLabel
     local Aimbot = Window:Tab({Name = "Aimbot"}) do
         -- settings
         Aimbot:Divider({Text = "Settings", Side = "Left"})
@@ -314,6 +314,32 @@ local function hitting_what(origin_cframe: CFrame)
     return result_part
 end
 
+local function health_check(obj: Player)
+    local char = obj.Character or obj.CharacterAdded:Wait()
+    local humanoid = char:FindFirstChildWhichIsA("Humanoid")
+
+    if char and humanoid then
+        if humanoid.Health > 0 then
+            return true
+        end
+    end
+
+    return false
+end
+
+local function self_health_check()
+    local char = local_player.Character or local_player.CharacterAdded:Wait()
+    local humanoid = char:FindFirstChildWhichIsA("Humanoid")
+
+    if char and humanoid then
+        if humanoid.Health > 0 then
+             return true
+        end
+    end
+
+    return false
+end
+
 local function is_inside_fov(point)
     return ((point.x - aiming.fov_circle_obj.Position.X) ^ 2 + (point.y - aiming.fov_circle_obj.Position.Y) ^ 2 <= aiming.fov_circle_obj.Radius ^ 2)
 end
@@ -379,7 +405,7 @@ local function stepped()
         for _, plr in pairs(players_table) do
             if plr == local_player then continue end
             if options.ignore_people[plr.Name] then continue end
-            if check_team(plr) then continue end
+            if options.team_check and check_team(plr) then continue end
 
             local plr_char = plr.Character
             local root_part =
@@ -418,6 +444,9 @@ local function stepped()
 
         local function run_aimbot(plr_offset)
             local char = idx_sorted[plr_offset]
+            
+            if not health_check(plr) then return end
+            if not self_health_check() then return end
 
             if char then
                 local children = char:GetChildren()
@@ -453,13 +482,14 @@ local function stepped()
                     end
                 end
 
-                if chosen and start_aim then
-                    local smoothness =  options.smoothness
+                if chosen then
+                    if start_aim then
+                        local smoothness =  options.smoothness
 
-                    if chosen.visible then
-                        mousemoverel((chosen.screen.X - mouse.X) / smoothness, (chosen.screen.Y - (mouse.Y + 36)) / smoothness)
+                        if chosen.visible then
+                            mousemoverel((chosen.screen.X - mouse.X + math.random(1, 2)) / smoothness, (chosen.screen.Y - (mouse.Y + 36) + math.random(1, 2)) / smoothness)
+                        end
                     end
-
                     if options.triggerbot then
                         if hitting_what(local_player.Character.Head.CFrame):IsDescendantOf(chosen.part.Parent) then
                             mouse1press()
@@ -468,10 +498,6 @@ local function stepped()
                         end
                     end
                 else
-                    if options.triggerbot then
-                        mouse1release()
-                    end
-                end
             end
         end
 
