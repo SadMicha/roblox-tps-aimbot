@@ -62,7 +62,7 @@ local start_aim = false
 
 getgenv().options = {
     -- internal
-    frame_delay = 10,
+    frame_delay = 25,
     refresh_delay = 0.25,
 
     -- misc
@@ -175,6 +175,14 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = options.ui
 
             Misc:Toggle({Name = "Wall Check", Value = options.wall_check, Callback = function(bool)
                 options.wall_check = bool
+            end})
+
+            Misc:Slider({Name = "Frame Delay", Min = 0, Max = 100, Value = options.frame_delay, Precise = 1, Unit = "", Callback = function(number)
+                options.frame_delay = number
+            end})
+
+            Misc:Slider({Name = "Refresh Delay", Min = 0, Max = 1, Value = options.refresh_delay, Precise = 1, Unit = "", Callback = function(number)
+                options.refresh_delay = number
             end})
         end
     end
