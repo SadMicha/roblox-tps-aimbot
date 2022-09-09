@@ -453,7 +453,7 @@ local function stepped()
                     if obj:IsA("BasePart") then
                         local part_screen, part_in_screen = to_screen(obj.Position)
 
-                        if can_hit(local_player.Character.PrimaryPart.Position, obj) and (part_in_screen) and (is_inside_fov(part_screen)) then
+                        if can_hit(local_player.Character.Head.Position, obj) and (part_in_screen) and (is_inside_fov(part_screen)) then
                             local set = {
                                 part = obj,
                                 screen = part_screen,
@@ -467,7 +467,6 @@ local function stepped()
                 end
 
                 local chosen = nil
-
                 local torso = parts["Torso"] or parts["UpperTorso"] or parts["LowerTorso"]
                 if torso then
                     chosen = torso
