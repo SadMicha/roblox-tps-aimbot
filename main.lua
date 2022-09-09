@@ -523,7 +523,7 @@ local function stepped()
                 local hum = char:FindFirstChildWhichIsA("Humanoid")
 
                 if char and hum then
-                    if hum.Health <= 0 or (lock_tick > 500) then
+                    if hum.Health <= 0 or (lock_tick > 200) then
                         locked_obj = nil
                         lock_tick = 0
                     end
