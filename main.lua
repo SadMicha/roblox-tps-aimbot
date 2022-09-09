@@ -39,6 +39,7 @@ getgenv().render_loop_stepped_name = renderloop_stepped_name or random_string(ma
 getgenv().update_loop_stepped_name = update_loop_stepped_name or random_string(math_random(15, 35))
 
 -- services
+local ChangeHistoryService = game:GetService("ChangeHistoryService")
 local players = game:GetService("Players")
 local run_service = game:GetService("RunService")
 local uis = game:GetService("UserInputService")
@@ -59,6 +60,7 @@ drawing_new("Square").Visible = false -- initialize drawing lib
 
 local refresh_que = false
 local start_aim = false
+local locked_obj: Player = nil
 
 getgenv().options = {
     -- internal
@@ -116,6 +118,7 @@ local function saveConfig()
     end
     writefile("vakware but better\\Configs\\Config.json", HttpService:JSONEncode(config))
 end
+
 loadConfig()
 
 local Bracket = loadstring(game:HttpGet("https://raw.githubusercontent.com/AlexR32/Bracket/main/BracketV32.lua"))()
@@ -391,9 +394,11 @@ getgenv().input_ended = uis.InputEnded:Connect(function(input, gpe)
 end)
 
 local last_tick = 0
+local lock_tick = 0
 local function stepped()
     if (tick() - last_tick) > (options.frame_delay / 1000) then
         last_tick = tick()
+        lock_tick = lock_tick + 2
 
         if refresh_que then -- refresh queed?
             _refresh()
@@ -454,16 +459,16 @@ local function stepped()
         local function run_aimbot(plr_offset)
             local char = idx_sorted[plr_offset]
             if char then
-                local children = char:GetChildren()
                 local parts = {}
 
-                for _, obj in pairs(children) do
+                for _, obj in pairs(char:GetChildren()) do
                     if obj:IsA("BasePart") then
                         local part_screen, part_in_screen = to_screen(obj.Position)
 
                         if can_hit(local_player.Character.Head.Position, obj) and (part_in_screen) and (is_inside_fov(part_screen)) then
                             local set = {
                                 part = obj,
+                                player = players:GetPlayerFromCharacter(obj.Parent),
                                 screen = part_screen,
                                 visible = part_in_screen;
                             }
@@ -485,11 +490,13 @@ local function stepped()
                 if chosen then
                     if start_aim then
                         local smoothness = options.smoothness
-                        if chosen.visible then
+                        if chosen.visible and (locked_obj == nil or locked_obj == chosen.player) then
                             local mouseLocation = uis:GetMouseLocation()
                             local endX = (chosen.screen.X - mouseLocation.X) / (smoothness * 2)
                             local endY = (chosen.screen.Y - mouseLocation.Y) / (smoothness * 2)
                             mousemoverel(endX, endY)
+                            locked_obj = chosen.player
+                            lock_tick = 0
                         end
                     end
 
@@ -509,6 +516,22 @@ local function stepped()
         end
 
         run_aimbot(1)
+
+        local function remove_locked()
+            if locked_obj then
+                local char = locked_obj.Character or locked_obj.CharacterAdded:Wait()
+                local hum = char:FindFirstChildWhichIsA("Humanoid")
+
+                if char and hum then
+                    if hum.Health <= 0 or (lock_tick > 500) then
+                        locked_obj = nil
+                        lock_tick = 0
+                    end
+                end
+            end
+        end
+
+        remove_locked()
     end
 end
 
