@@ -92,6 +92,10 @@ getgenv().options = {
     triggerbot_key = Enum.KeyCode["X"].Name,
     aimbot_key = Enum.UserInputType["MouseButton1"].Name,
 
+    cursor_offset_x = 0,
+    cursor_offset_y = 0,
+    show_cursor_offset = true,
+
     -- ui
     ui_toggle_key = Enum.KeyCode["RightControl"].Name,
     ui_toggle = true,
@@ -102,6 +106,7 @@ getgenv().options = {
 
     -- esp categories
     box = true,
+    box_color = Color3.new(0, 1, 0),
     chams = true,
 
     -- box
@@ -230,10 +235,12 @@ local function get_players()
 end
 
 local aiming = {
-    fov_circle_obj = nil;
+    fov_circle_obj = nil,
+    cursor_offset = nil,
 }
 
 local players_table = {}
+local box = {}
 
 -- needed functions
 local function to_screen(vec3)
@@ -412,6 +419,54 @@ local function is_inside_fov(point)
 end
 
 -- esp functions
+local function get_part_corners(part)
+    local size = part.Size * vector3_new(1, 1.5, 0)
+
+    local cf = part.CFrame
+
+    return {
+        top_right = (cf * CFrame.new(-size.X, -size.Y, 0)).Position,
+        bottom_right = (cf * CFrame.new(-size.X, size.Y, 0)).Position,
+        top_left = (cf * CFrame.new(size.X, -size.Y, 0)).Position,
+        bottom_left = (cf * CFrame.new(size.X, size.Y, 0)).Position,
+    }
+end
+
+local function remove_esp(index: number)
+    add_or_update_instance(box, index, {
+        Visible = false,
+        instance = "Quad"
+    })
+end
+
+local function create_box(root_part: Part, index: number)
+    local corners = get_part_corners(root_part)
+    local a_screen, a_visible = to_screen(corners.top_left)
+    local b_screen, b_visible = to_screen(corners.top_right)
+    local c_screen, c_visible = to_screen(corners.bottom_right)
+    local d_screen, d_visible = to_screen(corners.bottom_left)
+
+    if options.box then
+        if a_visible and b_visible and c_visible and d_visible then
+            add_or_update_instance(box, index, {
+                Visible = options.esp,
+                Thickness = options.esp_thickness,
+                PointA = a_screen,
+                PointB = b_screen,
+                PointC = c_screen,
+                PointD = d_screen,
+                Color = options.box_color,
+                instance = "Quad";
+            })
+        else
+            add_or_update_instance(box, index, {
+                Visible = false,
+                instance = "Quad";
+            })
+        end
+    end
+end
+
 local function delete_chams(target: Player)
     local char = target.Character or target.CharacterAdded:Wait()
     if char then
@@ -529,9 +584,30 @@ local function stepped()
             instance = "Circle";
         })
 
+        if options.ui_visible then
+            add_or_update_instance(aiming, "cursor_offset", {
+                Visible = options.show_cursor_offset,
+                Transparency = 0,
+                Thickness = 1,
+                PointA = Vector2.new(uis:GetMouseLocation().X + options.cursor_offset_x, uis:GetMouseLocation().Y + options.cursor_offset_y) + Vector2(1, 0),
+                PointB = Vector2.new(uis:GetMouseLocation().X + options.cursor_offset_x, uis:GetMouseLocation().Y + options.cursor_offset_y) + Vector2(-1, 0),
+                PointC = Vector2.new(uis:GetMouseLocation().X + options.cursor_offset_x, uis:GetMouseLocation().Y + options.cursor_offset_y) + Vector2(0, 1),
+                Filled = true,
+                Color = options.fov_color,
+                instance = "Triangle";
+            })
+        else
+            add_or_update_instance(aiming, "cursor_offset", {
+                Visible = false,
+                instance = "Triangle";
+            })
+        end
+        
+
         local closers_chars = {}
 
         for _, plr in pairs(players_table) do
+            local index = game:GetDebugId(plr)
             if plr == local_player then continue end
             if options.ignore_people[plr.Name] then continue end
             if options.team_check and check_team(plr) then continue end
@@ -553,13 +629,27 @@ local function stepped()
             if not head:IsA("BasePart") then continue end
             local mag = (head.Position - mouse.Hit.Position).Magnitude
             closers_chars[mag] = plr_char
-        end
 
+            if mag > options.max_dist then remove_esp(index) continue end
+
+            if options.esp then
+                if options.chams then
+                    chams(plr)
+                elseif not options.chams then
+                    delete_chams(plr)
+                end
+
+                if options.box then
+                    create_box(root_part, index)
+                elseif not options.box then
+                    remove_esp(index)
+                end
+            end
+        end
 
         if not options.aimbot then return end
 
         local mags = {}
-
         for idx in pairs(closers_chars) do
             mags[#mags + 1] = idx
         end
@@ -567,7 +657,6 @@ local function stepped()
         table_sort(mags)
 
         local idx_sorted = {}
-
         for _, idx in pairs(mags) do
             idx_sorted[#idx_sorted + 1] = closers_chars[idx]
         end
@@ -612,7 +701,7 @@ local function stepped()
                             local mouseLocation = uis:GetMouseLocation()
                             local endX = (chosen.screen.X - mouseLocation.X) / (smoothness * 2)
                             local endY = (chosen.screen.Y - mouseLocation.Y) / (smoothness * 2)
-                            mousemoverel(endX, endY)
+                            mousemoverel((options.cursor_offset_x - endX), (options.cursor_offset_y - endY))
                         end
                     end
 
