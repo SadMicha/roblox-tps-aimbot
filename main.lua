@@ -432,14 +432,14 @@ local function get_part_corners(part)
     }
 end
 
-local function remove_esp(index: number)
+local function remove_esp(index)
     add_or_update_instance(box, index, {
         Visible = false,
         instance = "Quad"
     })
 end
 
-local function create_box(root_part: Part, index: number)
+local function create_box(root_part: Part, index)
     local corners = get_part_corners(root_part)
     local a_screen, a_visible = to_screen(corners.top_left)
     local b_screen, b_visible = to_screen(corners.top_right)
