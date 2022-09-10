@@ -607,7 +607,7 @@ local function stepped()
         local closers_chars = {}
 
         for _, plr in pairs(players_table) do
-            local index = game:GetDebugId(plr)
+            local index = plr.UserId
             if plr == local_player then continue end
             if options.ignore_people[plr.Name] then continue end
             if options.team_check and check_team(plr) then continue end
