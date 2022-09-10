@@ -617,7 +617,7 @@ local function stepped()
                     end
 
                     if options.triggerbot then
-                        if (can_hit(mouse.Hit, chosen.part)) then
+                        if (hitting_what(mouse.Hit):IsDescendantOf(chosen.part.Parent)) then
                             mouse1press()
                         else
                             mouse1release()
