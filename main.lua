@@ -39,7 +39,6 @@ getgenv().render_loop_stepped_name = renderloop_stepped_name or random_string(ma
 getgenv().update_loop_stepped_name = update_loop_stepped_name or random_string(math_random(15, 35))
 
 -- services
-local ChangeHistoryService = game:GetService("ChangeHistoryService")
 local players = game:GetService("Players")
 local run_service = game:GetService("RunService")
 local uis = game:GetService("UserInputService")
@@ -55,6 +54,9 @@ local enum_rft_blk = Enum.RaycastFilterType.Blacklist
 local glass = Enum.Material.Glass
 
 local dummy_part = instance_new("Part", nil)
+
+local boxhandleName = "Chams"
+local outlineName = "Outline"
 
 drawing_new("Square").Visible = false -- initialize drawing lib
 
@@ -92,7 +94,27 @@ getgenv().options = {
 
     -- ui
     ui_toggle_key = Enum.KeyCode["RightControl"].Name,
-    ui_toggle = true
+    ui_toggle = true,
+
+    -- esp
+    esp = true,
+    esp_thickness = 1,
+
+    -- esp categories
+    box = true,
+    chams = true,
+
+    -- box
+    box_health = true,
+    box_distance = true,
+    box_name = true,
+
+    -- chams
+    chams_fill_color = Color3.new(0, 1, 0),
+    chams_outline_color = Color3.new(0, 0, 0),
+    chams_visible_only = true,
+    chams_fill_transparency = 0,
+    chams_outline_transparency = 0,
 }
 
 local function loadConfig()
@@ -287,8 +309,43 @@ local function can_hit(origin_pos, part)
 end
 
 local function check_team(obj: Player)
-    if obj.Team == local_player.Team then
-        return true
+    local placeId = game.PlaceId
+    if placeId == 5361853069 then -- Snow Core
+        local leaderboard = local_player:FindFirstChild("PlayerGui"):FindFirstChild("LeaderboardUI")
+        local leaderboardNew = leaderboard:FindFirstChild("LeaderboardNew")
+        local teamA = leaderboardNew:FindFirstChild("TeamAFrame"):FindFirstChild("TeamA"):FindFirstChild("PlayersList")
+        local teamB = leaderboardNew:FindFirstChild("TeamBFrame"):FindFirstChild("TeamB"):FindFirstChild("PlayersList")
+
+        local playerTeams = {}
+
+        for _, items in ipairs(teamA:GetChildren()) do
+            if items.Name == obj.Name then
+                playerTeams[#playerTeams + 1] = target.Name
+            elseif items.Name == local_player.Name then
+                playerTeams[#playerTeams + 1] = local_player.Name
+            end
+        end
+
+        if #playerTeams >= 2 then
+            return true
+        else
+            playerTeams = {}
+            for _, items in ipairs(teamB:GetChildren()) do
+                if items.Name == obj.Name then
+                    playerTeams[#playerTeams + 1] = target.Name
+                elseif items.Name == local_player.Name then
+                    playerTeams[#playerTeams + 1] = local_player.Name
+                end
+            end
+
+            if #playerTeams >= 2 then
+                return true
+            end
+        end
+    else
+        if obj.Team == local_player.Team then
+            return true
+        end
     end
 
     return false
@@ -352,6 +409,64 @@ end
 
 local function is_inside_fov(point)
     return ((point.x - aiming.fov_circle_obj.Position.X) ^ 2 + (point.y - aiming.fov_circle_obj.Position.Y) ^ 2 <= aiming.fov_circle_obj.Radius ^ 2)
+end
+
+-- esp functions
+local function delete_chams(target: Player)
+    local char = target.Character or target.CharacterAdded:Wait()
+    if char then
+        for _, items in ipairs(char:GetChildren()) do
+            if items:IsA("BasePart") and items.Transparency ~= 1 then
+                if items:FindFirstChildWhichIsA("BoxHandleAdornment") and (items.Name:match(boxhandleName) or items.Name:match(outlineName)) then
+                    items:Destroy()
+                end
+            end
+        end
+    end
+end
+
+local function chams(target: Player)
+    if target == local_player then return end
+    if check_team(target) then
+        delete_chams(target)
+        return
+    end
+    if not health_check(target) then
+        delete_chams(target)
+        return
+    end
+
+    local char = target.Character
+    local humanoid = char:FindFirstChildWhichIsA("Humanoid")
+    
+    if char and humanoid then
+        for _, items in ipairs(char:GetChildren()) do
+            if items:IsA("BasePart") and not items.Transparency == 1 then
+                if options.chams then
+                    local chams_box = instance_new("BoxHandleAdornment", items)
+                    chams_box.Name = boxhandleName
+                    chams_box.AlwaysOnTop = not options.chams_visible_only
+                    chams_box.ZIndex = 4
+                    chams_box.Adornee = items
+                    chams_box.Transparency = options.chams_fill_transparency
+                    chams_box.Color3 = options.chams_fill_color
+                    chams_box.Size = items.Size + Vector3.new(0.02, 0.02, 0.02)
+
+                    local chams_outline = instance_new("BoxHandleAdornment", items)
+                    chams_outline.Name = outlineName
+                    chams_outline.AlwaysOnTop = false
+                    chams_outline.ZIndex = 3
+                    chams_outline.Transparency = options.chams_outline_transparency
+                    chams_outline.Adornee = items
+                    chams_outline.Color3 = options.chams_outline_color
+                else
+                    delete_chams(target)
+                end
+            end
+        end
+    else
+        delete_chams(target)
+    end
 end
 
 local function _refresh()
@@ -440,6 +555,7 @@ local function stepped()
             closers_chars[mag] = plr_char
         end
 
+
         if not options.aimbot then return end
 
         local mags = {}
@@ -491,12 +607,12 @@ local function stepped()
                     if start_aim then
                         local smoothness = options.smoothness
                         if chosen.visible and (locked_obj == nil or locked_obj == chosen.player) then
+                            locked_obj = chosen.player
+                            lock_tick = 0
                             local mouseLocation = uis:GetMouseLocation()
                             local endX = (chosen.screen.X - mouseLocation.X) / (smoothness * 2)
                             local endY = (chosen.screen.Y - mouseLocation.Y) / (smoothness * 2)
                             mousemoverel(endX, endY)
-                            locked_obj = chosen.player
-                            lock_tick = 0
                         end
                     end
 
