@@ -310,7 +310,7 @@ end
 
 local function check_team(obj: Player)
     local placeId = game.PlaceId
-    if placeId == 5361853069 then -- Snow Core
+    if placeId == 5361853069 then -- Snow Core Auroras Dam
         local leaderboard = local_player:FindFirstChild("PlayerGui"):FindFirstChild("LeaderboardUI")
         local leaderboardNew = leaderboard:FindFirstChild("LeaderboardNew")
         local teamA = leaderboardNew:FindFirstChild("TeamAFrame"):FindFirstChild("TeamA"):FindFirstChild("PlayersList")
@@ -617,7 +617,7 @@ local function stepped()
                     end
 
                     if options.triggerbot then
-                        if (hitting_what(mouse.Hit):IsDescendantOf(chosen.part.Parent)) then
+                        if (can_hit(mouse.Hit, chosen.part)) then
                             mouse1press()
                         else
                             mouse1release()
@@ -639,7 +639,7 @@ local function stepped()
                 local hum = char:FindFirstChildWhichIsA("Humanoid")
 
                 if char and hum then
-                    if hum.Health <= 0 or (lock_tick > 200) then
+                    if hum.Health <= 0 or (lock_tick > 100) then
                         locked_obj = nil
                         lock_tick = 0
                     end
