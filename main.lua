@@ -106,10 +106,10 @@ getgenv().options = {
 
     -- esp categories
     box = true,
-    box_color = Color3.new(0, 1, 0),
     chams = true,
 
     -- box
+    box_color = Color3.new(0, 1, 0),
     box_health = true,
     box_distance = true,
     box_name = true,
@@ -230,8 +230,22 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = options.ui
     end
 end
 
+local players_table = {}
+
 local function get_players()
-    return players:GetPlayers()
+    local placeId = game.PlaceId
+    if placeId == 5361853069 then
+        for _, items in ipairs(workspace.Chars:GetChildren()) do
+            if items:IsA("Model") and items:FindFirstChildWhichIsA("Humanoid") then
+                local plr = players:GetPlayerFromCharacter(items)
+                players_table[#players_table+1] = plr
+            end
+        end
+
+        return players_table
+    end
+
+    return players:GetChildren()
 end
 
 local aiming = {
@@ -239,7 +253,7 @@ local aiming = {
     cursor_offset = nil,
 }
 
-local players_table = {}
+
 local box = {}
 
 -- needed functions
@@ -327,7 +341,7 @@ local function check_team(obj: Player)
 
         for _, items in ipairs(teamA:GetChildren()) do
             if items.Name == obj.Name then
-                playerTeams[#playerTeams + 1] = target.Name
+                playerTeams[#playerTeams + 1] = obj.Name
             elseif items.Name == local_player.Name then
                 playerTeams[#playerTeams + 1] = local_player.Name
             end
@@ -339,7 +353,7 @@ local function check_team(obj: Player)
             playerTeams = {}
             for _, items in ipairs(teamB:GetChildren()) do
                 if items.Name == obj.Name then
-                    playerTeams[#playerTeams + 1] = target.Name
+                    playerTeams[#playerTeams + 1] = obj.Name
                 elseif items.Name == local_player.Name then
                     playerTeams[#playerTeams + 1] = local_player.Name
                 end
@@ -420,7 +434,7 @@ end
 
 -- esp functions
 local function get_part_corners(part)
-    local size = part.Size * vector3_new(1, 1.5, 0)
+    local size = part.Size * Vector3.new(1, 1.5, 0)
 
     local cf = part.CFrame
 
@@ -439,7 +453,7 @@ local function remove_esp(index)
     })
 end
 
-local function create_box(root_part: Part, index)
+local function create_box(root_part, index)
     local corners = get_part_corners(root_part)
     local a_screen, a_visible = to_screen(corners.top_left)
     local b_screen, b_visible = to_screen(corners.top_right)
@@ -481,16 +495,6 @@ local function delete_chams(target: Player)
 end
 
 local function chams(target: Player)
-    if target == local_player then return end
-    if check_team(target) then
-        delete_chams(target)
-        return
-    end
-    if not health_check(target) then
-        delete_chams(target)
-        return
-    end
-
     local char = target.Character
     local humanoid = char:FindFirstChildWhichIsA("Humanoid")
     
@@ -585,21 +589,23 @@ local function stepped()
         })
 
         if options.ui_visible then
+            local cursor_offset_x = options.cursor_offset_x
+            local cursor_offset_y = options.cursor_offset_y
+
             add_or_update_instance(aiming, "cursor_offset", {
                 Visible = options.show_cursor_offset,
                 Transparency = 0,
                 Thickness = 1,
-                PointA = Vector2.new(uis:GetMouseLocation().X + options.cursor_offset_x, uis:GetMouseLocation().Y + options.cursor_offset_y) + Vector2(1, 0),
-                PointB = Vector2.new(uis:GetMouseLocation().X + options.cursor_offset_x, uis:GetMouseLocation().Y + options.cursor_offset_y) + Vector2(-1, 0),
-                PointC = Vector2.new(uis:GetMouseLocation().X + options.cursor_offset_x, uis:GetMouseLocation().Y + options.cursor_offset_y) + Vector2(0, 1),
+                Size = 1,
+                Position = Vector2.new((uis:GetMouseLocation().X + cursor_offset_x), (uis:GetMouseLocation().Y + cursor_offset_y)),
                 Filled = true,
                 Color = options.fov_color,
-                instance = "Triangle";
+                instance = "Square";
             })
         else
             add_or_update_instance(aiming, "cursor_offset", {
                 Visible = false,
-                instance = "Triangle";
+                instance = "Square";
             })
         end
         
@@ -607,10 +613,10 @@ local function stepped()
         local closers_chars = {}
 
         for _, plr in pairs(players_table) do
-            local index = plr.UserId
+            local index = plr:GetDebugId()
             if plr == local_player then continue end
             if options.ignore_people[plr.Name] then continue end
-            if options.team_check and check_team(plr) then continue end
+            if (options.team_check and check_team(plr)) then continue end
             if not health_check(plr) then continue end
             if not self_health_check() then continue end
 
@@ -624,24 +630,27 @@ local function stepped()
                 or plr_char:FindFirstChild("BasePart")
                 or plr_char:FindFirstChild("Part")
 
+            if root_part == nil then remove_esp(index) continue end
+            if not root_part:IsA("BasePart") then remove_esp(index) continue end
+
             local head = plr_char:FindFirstChild("Head") or root_part
             if not head then continue end
             if not head:IsA("BasePart") then continue end
             local mag = (head.Position - mouse.Hit.Position).Magnitude
             closers_chars[mag] = plr_char
 
-            if mag > options.max_dist then remove_esp(index) continue end
+            if mag > options.max_distance then remove_esp(index) continue end
 
             if options.esp then
                 if options.chams then
                     chams(plr)
-                elseif not options.chams then
+                else
                     delete_chams(plr)
                 end
 
                 if options.box then
                     create_box(root_part, index)
-                elseif not options.box then
+                else
                     remove_esp(index)
                 end
             end
@@ -720,7 +729,7 @@ local function stepped()
             end
         end
 
-        run_aimbot(1)
+        run_aimbot(0)
 
         local function remove_locked()
             if locked_obj then
