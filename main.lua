@@ -84,17 +84,9 @@ getgenv().options = {
     aimbot_toggle_key = Enum.KeyCode["E"].Name,
     smoothness = 3,
 
-    ignore_people = {
-        ["name"] = true,
-    },
-
     triggerbot = false,
     triggerbot_key = Enum.KeyCode["X"].Name,
     aimbot_key = Enum.UserInputType["MouseButton1"].Name,
-
-    cursor_offset_x = 0,
-    cursor_offset_y = 0,
-    show_cursor_offset = true,
 
     -- ui
     ui_toggle_key = Enum.KeyCode["RightControl"].Name,
@@ -106,7 +98,7 @@ getgenv().options = {
 
     -- esp categories
     box = true,
-    chams = true,
+    chams = false,
 
     -- box
     box_color = Color3.new(0, 1, 0),
@@ -205,14 +197,6 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = options.ui
 
             Misc:Toggle({Name = "Wall Check", Value = options.wall_check, Callback = function(bool)
                 options.wall_check = bool
-            end})
-
-            Misc:Slider({Name = "Frame Delay", Min = 0, Max = 100, Value = options.frame_delay, Precise = 1, Unit = "", Callback = function(number)
-                options.frame_delay = number
-            end})
-
-            Misc:Slider({Name = "Refresh Delay", Min = 0, Max = 1, Value = options.refresh_delay, Precise = 1, Unit = "", Callback = function(number)
-                options.refresh_delay = number
             end})
         end
     end
@@ -460,24 +444,22 @@ local function create_box(root_part, index)
     local c_screen, c_visible = to_screen(corners.bottom_right)
     local d_screen, d_visible = to_screen(corners.bottom_left)
 
-    if options.box then
-        if a_visible and b_visible and c_visible and d_visible then
-            add_or_update_instance(box, index, {
-                Visible = options.esp,
-                Thickness = options.esp_thickness,
-                PointA = a_screen,
-                PointB = b_screen,
-                PointC = c_screen,
-                PointD = d_screen,
-                Color = options.box_color,
-                instance = "Quad";
-            })
-        else
-            add_or_update_instance(box, index, {
-                Visible = false,
-                instance = "Quad";
-            })
-        end
+    if a_visible and b_visible and c_visible and d_visible then
+        add_or_update_instance(box, index, {
+            Visible = options.esp,
+            Thickness = options.esp_thickness,
+            PointA = a_screen,
+            PointB = b_screen,
+            PointC = c_screen,
+            PointD = d_screen,
+            Color = options.box_color,
+            instance = "Quad";
+        })
+    else
+        add_or_update_instance(box, index, {
+            Visible = false,
+            instance = "Quad";
+        })
     end
 end
 
@@ -529,6 +511,10 @@ local function chams(target: Player)
 end
 
 local function _refresh()
+    for idx in pairs(box) do -- hide all esp instances
+        remove_esp(idx)
+    end
+
     players_table = get_players() -- fetch new player list
 end
 
@@ -587,40 +573,18 @@ local function stepped()
             Color = options.fov_color,
             instance = "Circle";
         })
-
-        if options.ui_visible then
-            local cursor_offset_x = options.cursor_offset_x
-            local cursor_offset_y = options.cursor_offset_y
-
-            add_or_update_instance(aiming, "cursor_offset", {
-                Visible = options.show_cursor_offset,
-                Transparency = 0,
-                Thickness = 1,
-                Size = 1,
-                Position = Vector2.new((uis:GetMouseLocation().X + cursor_offset_x), (uis:GetMouseLocation().Y + cursor_offset_y)),
-                Filled = true,
-                Color = options.fov_color,
-                instance = "Square";
-            })
-        else
-            add_or_update_instance(aiming, "cursor_offset", {
-                Visible = false,
-                instance = "Square";
-            })
-        end
         
-
         local closers_chars = {}
 
         for _, plr in pairs(players_table) do
             local index = plr:GetDebugId()
             if plr == local_player then continue end
-            if options.ignore_people[plr.Name] then continue end
             if (options.team_check and check_team(plr)) then continue end
             if not health_check(plr) then continue end
             if not self_health_check() then continue end
 
             local plr_char = plr.Character
+            if plr_char == nil then remove_esp(index) continue end
             local root_part =
                 plr_char:FindFirstChild("Torso")
                 or plr_char:FindFirstChild("UpperTorso")
@@ -708,9 +672,10 @@ local function stepped()
                             locked_obj = chosen.player
                             lock_tick = 0
                             local mouseLocation = uis:GetMouseLocation()
-                            local endX = (chosen.screen.X - mouseLocation.X) / (smoothness * 2)
-                            local endY = (chosen.screen.Y - mouseLocation.Y) / (smoothness * 2)
-                            mousemoverel((options.cursor_offset_x - endX), (options.cursor_offset_y - endY))
+                            local endX = ((chosen.screen.X) - mouseLocation.X) / (smoothness * 2)
+                            local endY = ((chosen.screen.Y) - mouseLocation.Y) / (smoothness * 2)
+                            
+                            mousemoverel(endX, endY)
                         end
                     end
 
@@ -729,7 +694,7 @@ local function stepped()
             end
         end
 
-        run_aimbot(0)
+        run_aimbot(1)
 
         local function remove_locked()
             if locked_obj then
