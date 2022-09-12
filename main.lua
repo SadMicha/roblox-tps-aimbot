@@ -449,6 +449,7 @@ local function create_box(player, root_part, index)
             Position = Vector2.new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2),
             ZIndex = 69,
             Color = options.box_color,
+            Filled = false,
             instance = "Square";
         })
     
@@ -706,10 +707,6 @@ local function stepped()
                         else
                             mouse1release()
                         end
-                    end
-                else
-                    if options.triggerbot then
-                        mouse1release()
                     end
                 end
             end
