@@ -66,7 +66,7 @@ local locked_obj: Player = nil
 
 getgenv().options = {
     -- internal
-    frame_delay = 25,
+    frame_delay = 14,
     refresh_delay = 0.25,
 
     -- misc
@@ -101,7 +101,7 @@ getgenv().options = {
     chams = false,
 
     -- box
-    box_color = Color3.new(0, 1, 0),
+    box_color = Color3.new(1, 1, 1),
     box_health = true,
     box_distance = true,
     box_name = true,
@@ -239,11 +239,13 @@ local aiming = {
 
 
 local box = {}
+local box_health = {}
+local box_name = {}
 
 -- needed functions
 local function to_screen(vec3)
     local screen_pos, in_screen = cam:WorldToViewportPoint(vec3)
-    return vector2_new(screen_pos.X, screen_pos.Y), in_screen
+    return Vector3.new(screen_pos.X, screen_pos.Y, screen_pos.Z), in_screen
 end
 
 local function new_drawing(class_name)
@@ -417,49 +419,68 @@ local function is_inside_fov(point)
 end
 
 -- esp functions
-local function get_part_corners(part)
-    local size = part.Size * Vector3.new(1, 1.5, 0)
-
-    local cf = part.CFrame
-
-    return {
-        top_right = (cf * CFrame.new(-size.X, -size.Y, 0)).Position,
-        bottom_right = (cf * CFrame.new(-size.X, size.Y, 0)).Position,
-        top_left = (cf * CFrame.new(size.X, -size.Y, 0)).Position,
-        bottom_left = (cf * CFrame.new(size.X, size.Y, 0)).Position,
-    }
-end
-
 local function remove_esp(index)
     add_or_update_instance(box, index, {
         Visible = false,
-        instance = "Quad"
+        instance = "Square"
+    })
+
+    add_or_update_instance(box_name, index, {
+        Visible = false,
+        instance = "Text"
+    })
+
+    add_or_update_instance(box_health, index, {
+        Visible = false,
+        instance = "Square"
     })
 end
 
-local function create_box(root_part, index)
-    local corners = get_part_corners(root_part)
-    local a_screen, a_visible = to_screen(corners.top_left)
-    local b_screen, b_visible = to_screen(corners.top_right)
-    local c_screen, c_visible = to_screen(corners.bottom_right)
-    local d_screen, d_visible = to_screen(corners.bottom_left)
-
-    if a_visible and b_visible and c_visible and d_visible then
+local function create_box(player, root_part, index)
+    local screen_pos, is_visible = to_screen(root_part.Position)
+    local scale_factor = 1 / (screen_pos.Z * math.tan(math.rad(cam.FieldOfView * 0.5)) * 2) * 100
+    local width, height = math.floor(40 * scale_factor), math.floor(60 * scale_factor)
+    local size = Vector2.new(width, height)
+    if is_visible then
         add_or_update_instance(box, index, {
             Visible = options.esp,
             Thickness = options.esp_thickness,
-            PointA = a_screen,
-            PointB = b_screen,
-            PointC = c_screen,
-            PointD = d_screen,
+            Size = size,
+            Position = Vector2.new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2),
+            ZIndex = 69,
             Color = options.box_color,
-            instance = "Quad";
+            instance = "Square";
         })
+    
+        add_or_update_instance(box_name, index, {
+            Visible = options.box_name,
+            Color = Color3.new(1, 1, 1),
+            Text = player.Name,
+            Center = true,
+            Outline = true,
+            OutlineColor = Color3.new(0, 0, 0),
+            Position = Vector2.new(screen_pos.X, screen_pos.Y - height * 0.5 + -15),
+            Font = 2,
+            Size = 13,
+            instance = "Text"
+        })
+
+        add_or_update_instance(box_health, index, {
+            Visible = options.box_health,
+            Thickness = options.esp_thickness,
+            Color = Color3.new(0, 1, 0),
+            Filled = true,
+            ZIndex = 69,
+            Size = Vector2.new(1, -(Vector2.new(2,height).Y - 2) * (player.Character:FindFirstChild("Humanoid").Health / player.Character:FindFirstChild("Humanoid").MaxHealth)),
+            Position = Vector2.new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2) + Vector2.new(-3,0) + Vector2.new(1, -1 + (Vector2.new(2, height).Y)),
+            instance = "Square"
+        })
+
+        if options.box_health then
+            
+        end
     else
-        add_or_update_instance(box, index, {
-            Visible = false,
-            instance = "Quad";
-        })
+        remove_esp(index)
     end
 end
 
@@ -529,7 +550,7 @@ getgenv().player_removed = players.ChildRemoved:Connect(refresh)
 -- aimbot triggers
 getgenv().input_began = uis.InputBegan:Connect(function(input, gpe)
     if gpe then return end
-    if input.UserInputType.Name == options.aimbot_key then
+    if (input.UserInputType.Name == options.aimbot_key or input.KeyCode.Name == options.aimbot_key) then
 		start_aim = true
     elseif input.KeyCode.Name == options.ui_toggle_key then
         options.ui_visible = not options.ui_visible
@@ -548,7 +569,7 @@ end)
 
 getgenv().input_ended = uis.InputEnded:Connect(function(input, gpe)
     if gpe then return end
-    if input.UserInputType.Name == options.aimbot_key then
+    if (input.UserInputType.Name == options.aimbot_key or input.KeyCode.Name == options.aimbot_key) then
         start_aim = false
     end
 end)
@@ -613,7 +634,7 @@ local function stepped()
                 end
 
                 if options.box then
-                    create_box(root_part, index)
+                    create_box(plr, root_part, index)
                 else
                     remove_esp(index)
                 end
