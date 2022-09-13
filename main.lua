@@ -202,6 +202,37 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = options.ui
     end
 
     -- esp
+    local ESP = Window:Tab({Name = "ESP"}) do
+        ESP:Divider({Text = "Global", Side = "Right"})
+        local GlobalESPSection = ESP:Section({Name = "Global", Side = "Right"}) do
+            GlobalESPSection:Toggle({Name = "ESP", Value = options.esp, Callback = function(bool)
+                options.esp = bool
+            end})
+
+            GlobalESPSection:Slider({Name = "ESP Thickness", Min = 0, Max = 10, Value = options.esp_thickness, Precise = 1, Unit = "", Callback = function(number)
+                options.esp_thickness = number
+            end})
+        end
+
+        ESP:Divider({Text = "Box", Side = "Left"})
+        local BoxSection = ESP:Section({Name = "Global", Side = "Right"}) do
+            BoxSection:Toggle({Name = "Box", Value = options.box, Callback = function(bool)
+                options.box = bool
+            end})
+
+            BoxSection:Colorpicker({Name = "Box Color", Color = options.box_color, Callback = function(color, table)
+                options.box_color = table
+            end})
+
+            BoxSection:Toggle({Name = "Box Health", Value = options.box_health, Callback = function(bool)
+                options.box_health = bool
+            end})
+
+            BoxSection:Toggle({Name = "Box Name", Value = options.box_name, Callback = function(bool)
+                options.box_name = bool
+            end})
+        end
+    end
 
     -- settings
     local Settings = Window:Tab({Name = "UI Settings"}) do
@@ -241,6 +272,8 @@ local aiming = {
 local box = {}
 local box_health = {}
 local box_name = {}
+local box_outline = {}
+local box_health_outline = {}
 
 -- needed functions
 local function to_screen(vec3)
@@ -434,6 +467,16 @@ local function remove_esp(index)
         Visible = false,
         instance = "Square"
     })
+
+    add_or_update_instance(box_health_outline, index, {
+        Visible = false,
+        instance = "Square"
+    })
+
+    add_or_update_instance(box_outline, index, {
+        Visible = false,
+        instance = "Square"
+    })
 end
 
 local function create_box(player, root_part, index)
@@ -443,12 +486,23 @@ local function create_box(player, root_part, index)
     local size = Vector2.new(width, height)
     if is_visible then
         add_or_update_instance(box, index, {
-            Visible = options.esp,
+            Visible = options.box,
             Thickness = options.esp_thickness,
             Size = size,
             Position = Vector2.new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2),
             ZIndex = 69,
             Color = options.box_color,
+            Filled = false,
+            instance = "Square";
+        })
+
+        add_or_update_instance(box_outline, index, {
+            Visible = options.box,
+            Thickness = 3,
+            Size = size,
+            Position = Vector2.new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2),
+            ZIndex = 1,
+            Color = Color3.new(0, 0, 0),
             Filled = false,
             instance = "Square";
         })
@@ -466,6 +520,17 @@ local function create_box(player, root_part, index)
             instance = "Text"
         })
 
+        add_or_update_instance(box_health_outline, index, {
+            Visible = options.box_health,
+            Thickness = options.esp_thickness,
+            Color = Color3.new(0, 0, 0),
+            Filled = true,
+            ZIndex = 1,
+            Size = Vector2.new(2, height),
+            Position = Vector2.new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2) + Vector2.new(-3,0),
+            instance = "Square"
+        })
+
         add_or_update_instance(box_health, index, {
             Visible = options.box_health,
             Thickness = options.esp_thickness,
@@ -476,10 +541,6 @@ local function create_box(player, root_part, index)
             Position = Vector2.new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2) + Vector2.new(-3,0) + Vector2.new(1, -1 + (Vector2.new(2, height).Y)),
             instance = "Square"
         })
-
-        if options.box_health then
-            
-        end
     else
         remove_esp(index)
     end
@@ -639,6 +700,8 @@ local function stepped()
                 else
                     remove_esp(index)
                 end
+            else
+                remove_esp(index)
             end
         end
 
@@ -664,8 +727,10 @@ local function stepped()
                 for _, obj in pairs(char:GetChildren()) do
                     if obj:IsA("BasePart") then
                         local part_screen, part_in_screen = to_screen(obj.Position)
+                        local head = local_player:FindFirstChild("Character"):FindFirstChild("Head")
+                        if not head then continue end
 
-                        if can_hit(local_player.Character.Head.Position, obj) and (part_in_screen) and (is_inside_fov(part_screen)) then
+                        if can_hit(head.Position, obj) and (part_in_screen) and (is_inside_fov(part_screen)) then
                             local set = {
                                 part = obj,
                                 player = players:GetPlayerFromCharacter(obj.Parent),
