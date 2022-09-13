@@ -66,7 +66,7 @@ local locked_obj: Player = nil
 
 getgenv().options = {
     -- internal
-    frame_delay = 14,
+    frame_delay = 10,
     refresh_delay = 0.25,
 
     -- misc
@@ -215,7 +215,7 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = options.ui
         end
 
         ESP:Divider({Text = "Box", Side = "Left"})
-        local BoxSection = ESP:Section({Name = "Global", Side = "Right"}) do
+        local BoxSection = ESP:Section({Name = "Box", Side = "Left"}) do
             BoxSection:Toggle({Name = "Box", Value = options.box, Callback = function(bool)
                 options.box = bool
             end})
@@ -727,7 +727,9 @@ local function stepped()
                 for _, obj in pairs(char:GetChildren()) do
                     if obj:IsA("BasePart") then
                         local part_screen, part_in_screen = to_screen(obj.Position)
-                        local head = local_player:FindFirstChild("Character"):FindFirstChild("Head")
+
+                        if not local_player then continue end
+                        local head = local_player.Character:FindFirstChild("Head")
                         if not head then continue end
 
                         if can_hit(head.Position, obj) and (part_in_screen) and (is_inside_fov(part_screen)) then
