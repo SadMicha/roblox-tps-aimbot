@@ -484,6 +484,7 @@ local function create_box(player, root_part, index)
     local scale_factor = 1 / (screen_pos.Z * math.tan(math.rad(cam.FieldOfView * 0.5)) * 2) * 100
     local width, height = math.floor(40 * scale_factor), math.floor(60 * scale_factor)
     local size = Vector2.new(width, height)
+    
     if is_visible then
         add_or_update_instance(box, index, {
             Visible = options.box,
@@ -520,27 +521,38 @@ local function create_box(player, root_part, index)
             instance = "Text"
         })
 
-        add_or_update_instance(box_health_outline, index, {
-            Visible = options.box_health,
-            Thickness = options.esp_thickness,
-            Color = Color3.new(0, 0, 0),
-            Filled = true,
-            ZIndex = 1,
-            Size = Vector2.new(2, height),
-            Position = Vector2.new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2) + Vector2.new(-3,0),
-            instance = "Square"
-        })
+        if options.box_health then
+            local char = player.Character
+            if not char then return end
+            local humanoid = char:FindFirstChild("Humanoid")
+            if not humanoid then return end
+            local currentHealth = humanoid.Health
+            if not currentHealth then return end
+            local maxHealth = humanoid.MaxHealth
+            if not maxHealth then return end
 
-        add_or_update_instance(box_health, index, {
-            Visible = options.box_health,
-            Thickness = options.esp_thickness,
-            Color = Color3.new(0, 1, 0),
-            Filled = true,
-            ZIndex = 69,
-            Size = Vector2.new(1, -(Vector2.new(2,height).Y - 2) * (player.Character:FindFirstChild("Humanoid").Health / player.Character:FindFirstChild("Humanoid").MaxHealth)),
-            Position = Vector2.new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2) + Vector2.new(-3,0) + Vector2.new(1, -1 + (Vector2.new(2, height).Y)),
-            instance = "Square"
-        })
+            add_or_update_instance(box_health_outline, index, {
+                Visible = options.box_health,
+                Thickness = options.esp_thickness,
+                Color = Color3.new(0, 0, 0),
+                Filled = true,
+                ZIndex = 1,
+                Size = Vector2.new(2, height),
+                Position = Vector2.new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2) + Vector2.new(-3,0),
+                instance = "Square"
+            })
+    
+            add_or_update_instance(box_health, index, {
+                Visible = options.box_health,
+                Thickness = options.esp_thickness,
+                Color = Color3.new(0, 1, 0),
+                Filled = true,
+                ZIndex = 69,
+                Size = Vector2.new(1, -(Vector2.new(2,height).Y - 2) * (currentHealth / maxHealth)),
+                Position = Vector2.new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2) + Vector2.new(-3,0) + Vector2.new(1, -1 + (Vector2.new(2, height).Y)),
+                instance = "Square"
+            })
+        end
     else
         remove_esp(index)
     end
