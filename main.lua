@@ -523,13 +523,10 @@ local function create_box(player, root_part, index)
 
         if options.box_health then
             local char = player.Character
-            if not char then return end
-            local humanoid = char:FindFirstChild("Humanoid")
-            if not humanoid then return end
+            local humanoid = char:FindFirstChildWhichIsA("Humanoid")
+            if not (humanoid or char) then return end
             local currentHealth = humanoid.Health
-            if not currentHealth then return end
             local maxHealth = humanoid.MaxHealth
-            if not maxHealth then return end
 
             add_or_update_instance(box_health_outline, index, {
                 Visible = options.box_health,
