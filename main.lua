@@ -528,25 +528,27 @@ local function create_box(player, root_part, index)
             local currentHealth = humanoid.Health
             local maxHealth = humanoid.MaxHealth
 
-            add_or_update_instance(box_health_outline, index, {
-                Visible = options.box_health,
-                Thickness = options.esp_thickness,
-                Color = Color3.new(0, 0, 0),
-                Filled = true,
-                ZIndex = 1,
-                Size = Vector2.new(2, height),
-                Position = Vector2.new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2) + Vector2.new(-3,0),
-                instance = "Square"
-            })
-    
+            local sizeH = Vector2.new(2, height)
+
             add_or_update_instance(box_health, index, {
                 Visible = options.box_health,
                 Thickness = options.esp_thickness,
                 Color = Color3.new(0, 1, 0),
                 Filled = true,
                 ZIndex = 69,
-                Size = Vector2.new(1, -(Vector2.new(2,height).Y - 2) * (currentHealth / maxHealth)),
-                Position = Vector2.new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2) + Vector2.new(-3,0) + Vector2.new(1, -1 + (Vector2.new(2, height).Y)),
+                Size = Vector2.new(1, -(sizeH.Y - 2) * (currentHealth / maxHealth)),
+                Position = Vector2.new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2) + Vector2.new(-3, 0) + Vector2.new(1, -1 + (sizeH.Y)),
+                instance = "Square"
+            })
+
+            add_or_update_instance(box_health_outline, index, {
+                Visible = options.box_health,
+                Thickness = options.esp_thickness,
+                Color = Color3.new(0, 0, 0),
+                Filled = true,
+                ZIndex = 1,
+                Size = sizeH,
+                Position = Vector2.new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2) + Vector2.new(-3, 0),
                 instance = "Square"
             })
         end
