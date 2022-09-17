@@ -772,8 +772,8 @@ local function stepped()
                             locked_obj = chosen.player
                             lock_tick = 0
                             local mouseLocation = uis:GetMouseLocation()
-                            local endX = ((chosen.screen.X) - mouseLocation.X) / (smoothness * 2)
-                            local endY = ((chosen.screen.Y) - mouseLocation.Y) / (smoothness * 2)
+                            local endX = (chosen.screen.X - mouseLocation.X) / (smoothness * 2)
+                            local endY = (chosen.screen.Y - mouseLocation.Y) / (smoothness * 2)
                             
                             mousemoverel(endX, endY)
                         end
