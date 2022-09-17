@@ -248,19 +248,18 @@ end
 local players_table = {}
 
 local function get_players()
+    local local_players = {}
     local placeId = game.PlaceId
     if placeId == 5361853069 then
         for _, items in ipairs(workspace.Chars:GetChildren()) do
             if items:IsA("Model") and items:FindFirstChildWhichIsA("Humanoid") then
                 local plr = players:GetPlayerFromCharacter(items)
-                players_table[#players_table+1] = plr
+                local_players[#local_players+1] = plr
             end
         end
-
-        return players_table
+        return local_players
     end
-
-    return players:GetChildren()
+    return players:GetPlayers()
 end
 
 local aiming = {
@@ -349,7 +348,6 @@ local function can_hit(origin_pos, part)
 end
 
 local function check_team(obj: Player)
-    if not obj:IsA("Player") then return end
     local placeId = game.PlaceId
     if placeId == 5361853069 then -- Snow Core Auroras Dam
         local leaderboard = local_player:FindFirstChild("PlayerGui"):FindFirstChild("LeaderboardUI")
