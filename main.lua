@@ -349,6 +349,7 @@ local function can_hit(origin_pos, part)
 end
 
 local function check_team(obj: Player)
+    if not obj:IsA("Player") then return end
     local placeId = game.PlaceId
     if placeId == 5361853069 then -- Snow Core Auroras Dam
         local leaderboard = local_player:FindFirstChild("PlayerGui"):FindFirstChild("LeaderboardUI")
