@@ -248,17 +248,6 @@ end
 local players_table = {}
 
 local function get_players()
-    local local_players = {}
-    local placeId = game.PlaceId
-    if placeId == 5361853069 then
-        for _, items in ipairs(workspace.Chars:GetChildren()) do
-            if items:IsA("Model") and items:FindFirstChildWhichIsA("Humanoid") then
-                local plr = players:GetPlayerFromCharacter(items)
-                local_players[#local_players+1] = plr
-            end
-        end
-        return local_players
-    end
     return players:GetPlayers()
 end
 
@@ -311,6 +300,21 @@ local function add_or_update_instance(tbl, child, props)
     return inst
 end
 
+local function get_character(player: Player)
+    local placeId = game.PlaceId
+    local char = player.Character
+    if placeId == 5361853069 then
+        for _, _players in ipairs(players:GetPlayers()) do
+            if workspace.Chars:GetChildren()[_players.Name] then
+                char = workspace.Chars:GetChildren()[_players.Name]
+            end
+        end
+    end
+    if char then
+        return char
+    end
+end
+
 local ignored_instances = {}
 
 local raycast_params = raycast_params_new()
@@ -322,7 +326,7 @@ local function can_hit(origin_pos, part)
         return true
     end
 
-    local ignore_list = {cam, local_player.Character}
+    local ignore_list = {cam, get_character(local_player)}
 
     for idx, val in pairs(ignored_instances) do
         ignore_list[#ignore_list + 1] = val
@@ -395,7 +399,7 @@ local function hitting_what(origin_cframe: CFrame)
         return dummy_part
     end
 
-    local ignore_list = {cam, local_player.Character}
+    local ignore_list = {cam, get_character(local_player)}
 
     for idx, val in pairs(ignored_instances) do
         ignore_list[#ignore_list + 1] = val
@@ -421,7 +425,7 @@ local function hitting_what(origin_cframe: CFrame)
 end
 
 local function health_check(obj: Player)
-    local char = obj.Character or obj.CharacterAdded:Wait()
+    local char = get_character(obj)
     local humanoid = char:FindFirstChildWhichIsA("Humanoid")
 
     if char and humanoid then
@@ -434,7 +438,7 @@ local function health_check(obj: Player)
 end
 
 local function self_health_check()
-    local char = local_player.Character or local_player.CharacterAdded:Wait()
+    local char = get_character(local_player)
     local humanoid = char:FindFirstChildWhichIsA("Humanoid")
 
     if char and humanoid then
@@ -521,7 +525,7 @@ local function create_box(player, root_part, index)
         })
 
         if options.box_health then
-            local char = player.Character
+            local char = get_character(player)
             local humanoid = char:FindFirstChildWhichIsA("Humanoid")
             if not (humanoid or char) then return end
             local currentHealth = humanoid.Health
@@ -557,7 +561,7 @@ local function create_box(player, root_part, index)
 end
 
 local function delete_chams(target: Player)
-    local char = target.Character or target.CharacterAdded:Wait()
+    local char = get_character(target)
     if char then
         for _, items in ipairs(char:GetChildren()) do
             if items:IsA("BasePart") and items.Transparency ~= 1 then
@@ -570,7 +574,7 @@ local function delete_chams(target: Player)
 end
 
 local function chams(target: Player)
-    local char = target.Character
+    local char = get_character(target)
     local humanoid = char:FindFirstChildWhichIsA("Humanoid")
     
     if char and humanoid then
@@ -676,7 +680,7 @@ local function stepped()
             if not health_check(plr) then continue end
             if not self_health_check() then continue end
 
-            local plr_char = plr.Character
+            local plr_char = get_character(plr)
             if plr_char == nil then remove_esp(index) continue end
             local root_part =
                 plr_char:FindFirstChild("Torso")
@@ -739,7 +743,7 @@ local function stepped()
                         local part_screen, part_in_screen = to_screen(obj.Position)
 
                         if not local_player then continue end
-                        local head = local_player.Character:FindFirstChild("Head")
+                        local head = get_character(local_player):FindFirstChild("Head")
                         if not head then continue end
 
                         if can_hit(head.Position, obj) and (part_in_screen) and (is_inside_fov(part_screen)) then
@@ -793,7 +797,7 @@ local function stepped()
 
         local function remove_locked()
             if locked_obj then
-                local char = locked_obj.Character or locked_obj.CharacterAdded:Wait()
+                local char = get_character(locked_obj)
                 local hum = char:FindFirstChildWhichIsA("Humanoid")
 
                 if char and hum then
