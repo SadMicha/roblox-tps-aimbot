@@ -304,10 +304,8 @@ local function get_character(player: Player)
     local placeId = game.PlaceId
     local char = player.Character
     if placeId == 5361853069 then
-        for _, _players in ipairs(players:GetPlayers()) do
-            if workspace.Chars:GetChildren()[_players.Name] then
-                char = workspace.Chars:GetChildren()[_players.Name]
-            end
+        if workspace.Chars:GetChildren()[player.Name] then
+            char = workspace.Chars:GetChildren()[player.Name]
         end
     end
     if char then
