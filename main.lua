@@ -112,6 +112,10 @@ getgenv().options = {
     chams_visible_only = true,
     chams_fill_transparency = 0,
     chams_outline_transparency = 0,
+
+    -- fun
+    spinbot = false,
+    spinpower = 50,
 }
 
 local function loadConfig()
@@ -234,6 +238,27 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = options.ui
         end
     end
 
+    -- fun
+    local Fun = Window:Tab({Name = "Fun"}) do
+        Fun:Divider({Text = "Global", Side = "Right"})
+        local GlobalSection = Fun:Section({Name = "Global", Side = "Right"}) do
+            GlobalSection:Toggle({Name = "Spin Bot", Value = options.spinbot, Callback = function(bool)
+                options.spinbot = bool
+            end})
+            GlobalSection:Slider({Name = "Spin Power", Min = 0, Max = 100, Value = options.spinpower, Precise = 1, Unit = "", Callback = function(number)
+                options.spinpower = number
+            end})
+        end
+        Fun:Divider({Text = "Vaktovia", Side = "Left"})
+        local Vaktovia = Fun:Section({Name = "Vaktovia", Side = "Left"}) do
+            
+        end
+        Fun:Divider({Text = "Snow Core", Side = "Left"})
+        local SnowCore = Fun:Section({Name = "Snow Core", Side = "Left"}) do
+            
+        end
+    end
+
     -- settings
     local Settings = Window:Tab({Name = "UI Settings"}) do
         Settings:Divider({Text = "Settings", Side = "Left"})
@@ -303,11 +328,12 @@ end
 local function get_character(player: Player)
     local placeId = game.PlaceId
     local char = player.Character
-    if placeId == 5361853069 then
+    if placeId == 5361853069 then -- Snow Core Auroras Dam
         if workspace.Chars:GetChildren()[player.Name] then
             char = workspace.Chars:GetChildren()[player.Name]
         end
     end
+
     if char then
         return char
     end
@@ -359,34 +385,32 @@ local function check_team(obj: Player)
 
         local playerTeams = {}
 
-        for _, items in ipairs(teamA:GetChildren()) do
-            if items.Name == obj.Name then
-                playerTeams[#playerTeams + 1] = obj.Name
-            elseif items.Name == local_player.Name then
-                playerTeams[#playerTeams + 1] = local_player.Name
-            end
-        end
-
-        if #playerTeams >= 2 then
-            return true
-        else
+        local function sortTeam(_obj)
             playerTeams = {}
-            for _, items in ipairs(teamB:GetChildren()) do
+            for _, items in ipairs(_obj:GetChildren()) do
                 if items.Name == obj.Name then
                     playerTeams[#playerTeams + 1] = obj.Name
                 elseif items.Name == local_player.Name then
                     playerTeams[#playerTeams + 1] = local_player.Name
                 end
             end
-
-            if #playerTeams >= 2 then
-                return true
-            end
         end
-    else
-        if obj.Team == local_player.Team then
+
+        sortTeam(teamA)
+
+        if #playerTeams >= 2 then
             return true
         end
+
+        sortTeam(teamB)
+
+        if #playerTeams >= 2 then
+            return true
+        end
+    end
+
+    if obj.Team == local_player.Team then
+        return true
     end
 
     return false
@@ -420,6 +444,28 @@ local function hitting_what(origin_cframe: CFrame)
     end
 
     return result_part
+end
+
+local function spin_bot(player: Player)
+    local spin = nil
+    local char = get_character(player)
+    local rootPart = char:FindFirstChild("HumanoidRootPart")
+    if char and rootPart then
+        if options.spinbot then
+            if not rootPart:FindFirstChildWhichIsA("BodyThrust") then
+                spin = instance_new("BodyThrust", rootPart)
+            else
+                spin = rootPart:FindFirstChildWhichIsA("BodyThrust")
+            end
+
+            spin.Force = Vector3.new(options.spinpower, 0, options.spinpower)
+            spin.Location = rootPart.Position
+        else
+            if rootPart:FindFirstChildWhichIsA("BodyThrust") then
+                rootPart:FindFirstChildWhichIsA("BodyThrust"):Destroy()
+            end
+        end
+    end
 end
 
 local function health_check(obj: Player)
@@ -484,14 +530,14 @@ local function create_box(player, root_part, index)
     local screen_pos, is_visible = to_screen(root_part.Position)
     local scale_factor = 1 / (screen_pos.Z * math.tan(math.rad(cam.FieldOfView * 0.5)) * 2) * 100
     local width, height = math.floor(40 * scale_factor), math.floor(60 * scale_factor)
-    local size = Vector2.new(width, height)
+    local size = vector2_new(width, height)
     
     if is_visible then
         add_or_update_instance(box, index, {
             Visible = options.box,
             Thickness = options.esp_thickness,
             Size = size,
-            Position = Vector2.new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2),
+            Position = vector2_new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2),
             ZIndex = 69,
             Color = options.box_color,
             Filled = false,
@@ -502,7 +548,7 @@ local function create_box(player, root_part, index)
             Visible = options.box,
             Thickness = 3,
             Size = size,
-            Position = Vector2.new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2),
+            Position = vector2_new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2),
             ZIndex = 1,
             Color = Color3.new(0, 0, 0),
             Filled = false,
@@ -516,7 +562,7 @@ local function create_box(player, root_part, index)
             Center = true,
             Outline = true,
             OutlineColor = Color3.new(0, 0, 0),
-            Position = Vector2.new(screen_pos.X, screen_pos.Y - height * 0.5 + -15),
+            Position = vector2_new(screen_pos.X, screen_pos.Y - height * 0.5 + -15),
             Font = 2,
             Size = 13,
             instance = "Text"
@@ -529,7 +575,7 @@ local function create_box(player, root_part, index)
             local currentHealth = humanoid.Health
             local maxHealth = humanoid.MaxHealth
 
-            local sizeH = Vector2.new(2, height)
+            local sizeH = vector2_new(2, height)
 
             add_or_update_instance(box_health, index, {
                 Visible = options.box_health,
@@ -537,8 +583,8 @@ local function create_box(player, root_part, index)
                 Color = Color3.new(0, 1, 0),
                 Filled = true,
                 ZIndex = 69,
-                Size = Vector2.new(1, -(sizeH.Y - 2) * (currentHealth / maxHealth)),
-                Position = Vector2.new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2) + Vector2.new(-3, 0) + Vector2.new(1, -1 + (sizeH.Y)),
+                Size = vector2_new(1, -(sizeH.Y - 2) * (currentHealth / maxHealth)),
+                Position = vector2_new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2) + vector2_new(-3, 0) + vector2_new(1, -1 + (sizeH.Y)),
                 instance = "Square"
             })
 
@@ -549,7 +595,7 @@ local function create_box(player, root_part, index)
                 Filled = true,
                 ZIndex = 1,
                 Size = sizeH,
-                Position = Vector2.new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2) + Vector2.new(-3, 0),
+                Position = vector2_new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2) + vector2_new(-3, 0),
                 instance = "Square"
             })
         end
@@ -664,7 +710,7 @@ local function stepped()
             Visible = options.fov_circle,
             Thickness = 1,
             Radius = options.fov,
-            Position = Vector2.new(uis:GetMouseLocation().X, uis:GetMouseLocation().Y),
+            Position = vector2_new(uis:GetMouseLocation().X, uis:GetMouseLocation().Y),
             Color = options.fov_color,
             instance = "Circle";
         })
@@ -678,25 +724,25 @@ local function stepped()
             if not health_check(plr) then continue end
             if not self_health_check() then continue end
 
-            local plr_char = get_character(plr)
-            if plr_char == nil then remove_esp(index) continue end
-            local root_part =
-                plr_char:FindFirstChild("Torso")
-                or plr_char:FindFirstChild("UpperTorso")
-                or plr_char:FindFirstChild("LowerTorso")
-                or plr_char:FindFirstChild("HumanoidRootPart")
-                or plr_char:FindFirstChild("Head")
-                or plr_char:FindFirstChild("BasePart")
-                or plr_char:FindFirstChild("Part")
+            local char = get_character(plr)
+            if char == nil then remove_esp(index) continue end
+            local rootPart =
+            char:FindFirstChild("Torso")
+                or char:FindFirstChild("UpperTorso")
+                or char:FindFirstChild("LowerTorso")
+                or char:FindFirstChild("HumanoidRootPart")
+                or char:FindFirstChild("Head")
+                or char:FindFirstChild("BasePart")
+                or char:FindFirstChild("Part")
 
-            if root_part == nil then remove_esp(index) continue end
-            if not root_part:IsA("BasePart") then remove_esp(index) continue end
+            if rootPart == nil then remove_esp(index) continue end
+            if not rootPart:IsA("BasePart") then remove_esp(index) continue end
 
-            local head = plr_char:FindFirstChild("Head") or root_part
+            local head = char:FindFirstChild("Head") or rootPart
             if not head then continue end
             if not head:IsA("BasePart") then continue end
             local mag = (head.Position - mouse.Hit.Position).Magnitude
-            closers_chars[mag] = plr_char
+            closers_chars[mag] = char
 
             if mag > options.max_distance then remove_esp(index) continue end
 
@@ -708,7 +754,7 @@ local function stepped()
                 end
 
                 if options.box then
-                    create_box(plr, root_part, index)
+                    create_box(plr, rootPart, index)
                 else
                     remove_esp(index)
                 end
@@ -716,6 +762,8 @@ local function stepped()
                 remove_esp(index)
             end
         end
+
+        spin_bot(local_player)
 
         if not options.aimbot then return end
 
@@ -770,8 +818,6 @@ local function stepped()
                     if start_aim then
                         local smoothness = options.smoothness
                         if chosen.visible and (locked_obj == nil or locked_obj == chosen.player) then
-                            locked_obj = chosen.player
-                            lock_tick = 0
                             local mouseLocation = uis:GetMouseLocation()
                             local endX = (chosen.screen.X - mouseLocation.X) / (smoothness * 2)
                             local endY = (chosen.screen.Y - mouseLocation.Y) / (smoothness * 2)
@@ -792,22 +838,6 @@ local function stepped()
         end
 
         run_aimbot(1)
-
-        local function remove_locked()
-            if locked_obj then
-                local char = get_character(locked_obj)
-                local hum = char:FindFirstChildWhichIsA("Humanoid")
-
-                if char and hum then
-                    if hum.Health <= 0 or (lock_tick > 100) then
-                        locked_obj = nil
-                        lock_tick = 0
-                    end
-                end
-            end
-        end
-
-        remove_locked()
     end
 end
 
