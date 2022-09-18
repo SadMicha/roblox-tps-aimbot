@@ -817,7 +817,7 @@ local function stepped()
                 if chosen then
                     if start_aim then
                         local smoothness = options.smoothness
-                        if chosen.visible and (locked_obj == nil or locked_obj == chosen.player) then
+                        if chosen.visible then
                             local mouseLocation = uis:GetMouseLocation()
                             local endX = (chosen.screen.X - mouseLocation.X) / (smoothness * 2)
                             local endY = (chosen.screen.Y - mouseLocation.Y) / (smoothness * 2)
