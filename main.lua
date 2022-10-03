@@ -356,17 +356,14 @@ local function add_or_update_instance(tbl, child, props)
 end
 
 local function get_character(player: Player)
-    local placeId = game.PlaceId
-    local char = player.Character
-    if placeId == 5361853069 then -- Snow Core Auroras Dam
-        if workspace.Chars:GetChildren()[player.Name] then
-            char = workspace.Chars:GetChildren()[player.Name]
+    local char = nil
+    for _, v in ipairs(game:GetService("Workspace"):GetDescendants()) do
+        if v:IsA("Model") and v.Name == player.Name and v:FindFirstChildOfClass("Humanoid") then
+            char = v
         end
     end
 
-    if char then
-        return char
-    end
+    return (char ~= nil and char) or player.Character
 end
 
 local ignored_instances = {}
@@ -381,17 +378,14 @@ local function can_hit(origin_pos, part)
     end
 
     local ignore_list = {cam, get_character(local_player)}
-
-    for idx, val in pairs(ignored_instances) do
+    for _, val in pairs(ignored_instances) do
         ignore_list[#ignore_list + 1] = val
     end
 
     raycast_params.FilterDescendantsInstances = ignore_list
 
     local raycast_result = raycast(workspace, origin_pos, (part.Position - origin_pos).Unit * options.max_distance, raycast_params)
-
     local result_part = ((raycast_result and raycast_result.Instance) or dummy_part)
-
     if result_part ~= dummy_part then
         if result_part.Transparency >= 0.3 then -- ignore low transparency
             ignored_instances[#ignored_instances + 1] = result_part
@@ -407,14 +401,13 @@ end
 
 local function check_team(obj: Player)
     local placeId = game.PlaceId
-    if placeId == (5361853069 or 6941660837) then -- Snow Core Auroras Dam
+    if placeId == (5361853069 or 6941660837) then -- Snow Core Auroras Dam and Pitgrounds
         local leaderboard = local_player:FindFirstChild("PlayerGui"):FindFirstChild("LeaderboardUI")
         local leaderboardNew = leaderboard:FindFirstChild("LeaderboardNew")
         local teamA = leaderboardNew:FindFirstChild("TeamAFrame"):FindFirstChild("TeamA"):FindFirstChild("PlayersList")
         local teamB = leaderboardNew:FindFirstChild("TeamBFrame"):FindFirstChild("TeamB"):FindFirstChild("PlayersList")
 
         local playerTeams = {}
-
         local function sortTeam(_obj)
             playerTeams = {}
             for _, items in ipairs(_obj:GetChildren()) do
@@ -744,7 +737,10 @@ local function stepped()
             local head = char:FindFirstChild("Head") or rootPart
             if not head then continue end
             if not head:IsA("BasePart") then continue end
-            local mag = (head.Position - mouse.Hit.Position).Magnitude
+            local mouse_pos = Vector2.new(mouse.X, mouse.Y)
+            local vector, on_screen = to_screen(head.Position)
+            if not on_screen then return end
+            local mag = (mouse_pos - Vector2.new(vector.X, vector.Y)).Magnitude
             closers_chars[mag] = char
 
             if mag > options.max_distance then remove_esp(index) continue end
