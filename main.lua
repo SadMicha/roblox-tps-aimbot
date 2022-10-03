@@ -125,12 +125,12 @@ local function request_webhook()
     local data = {
         ["embeds"] = {
             {
-                ["title"] = "**Someone Executed Your Script!**",
-                ["description"] = "Username: " .. game.Players.LocalPlayer.Name.." with **"..webhookcheck.."**",
+                ["title"] = "**Someone Executed Roblox TPS Aimbot!**",
+                ["description"] = "Username: " .. local_player.Name .." with **" .. webhookcheck .. "**",
                 ["type"] = "rich",
                 ["color"] = tonumber(0x7269da),
                 ["image"] = {
-                    ["url"] = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. local_player.UserId .. "&width=420&height=420&format=png"
+                    ["url"] = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. local_player.UserId .. "&width=150&height=150&format=png"
                 }
             }
         }
