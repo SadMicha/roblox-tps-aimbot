@@ -512,7 +512,7 @@ local function create_box(player, root_part, index)
             Filled = false,
             instance = "Square";
         })
-    
+
         add_or_update_instance(box_name, index, {
             Visible = options.box_name,
             Color = Color3.new(1, 1, 1),
@@ -653,14 +653,14 @@ local function stepped()
             local head = char:FindFirstChild("Head") or rootPart
             if not head then continue end
             if not head:IsA("BasePart") then continue end
-
-            local mouse_pos = Vector2.new(mouse.X, mouse.Y)
+            local visual_mag = (head.Position - mouse.Hit.Position).Magnitude
+            if visual_mag > options.max_distance then remove_esp(index) continue end
+            
+            local mouse_pos = uis:GetMouseLocation()
             local vector, on_screen = to_screen(head.Position)
             if not on_screen then continue end
-            local mag = (mouse_pos - Vector2.new(vector.X, vector.Y)).Magnitude
-            closers_chars[mag] = char
-
-            if mag > options.max_distance then remove_esp(index) continue end
+            local char_mag = (mouse_pos - vector2_new(vector.X, vector.Y)).Magnitude
+            closers_chars[char_mag] = char
 
             if options.esp then
                 if options.box then
@@ -691,6 +691,7 @@ local function stepped()
         for _, idx in pairs(mags) do
             idx_sorted[#idx_sorted + 1] = closers_chars[idx]
         end
+        
         local function run_aimbot(plr_offset)
             if not options.aimbot then return end
             local char = idx_sorted[plr_offset]
