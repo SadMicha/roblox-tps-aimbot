@@ -155,10 +155,8 @@ local function loadConfig()
 
     local decodeJSON = HttpService:JSONDecode(readfile("vakware but better\\Configs\\Config.json"))
     for i, v in pairs(options) do
-        if options[i] then
-            if decodeJSON[i] ~= nil then
-                options[i] = decodeJSON[i]
-            end
+        if decodeJSON[i] ~= nil then
+            options[i] = decodeJSON[i]
         end
     end
 end
@@ -166,9 +164,7 @@ end
 local function saveConfig()
     local config = HttpService:JSONDecode(readfile("vakware but better\\Configs\\Config.json"))
     for i, _ in pairs(options) do
-        if options[i] then
-            config[i] = options[i]
-        end
+        config[i] = options[i]
     end
     writefile("vakware but better\\Configs\\Config.json", HttpService:JSONEncode(config))
 end
