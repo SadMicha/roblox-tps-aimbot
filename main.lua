@@ -303,14 +303,9 @@ local function add_or_update_instance(tbl, child, props)
 end
 
 local function get_character(player: Player)
-    local char = nil
-    for _, v in ipairs(game:GetService("Workspace"):GetDescendants()) do
-        if v:IsA("Model") and v.Name == player.Name and v:FindFirstChildOfClass("Humanoid") then
-            char = v
-        end
-    end
-
-    return (char ~= nil and char) or player.Character
+    local character = player.Character or player.CharacterAdded:Wait()
+    if not character:IsDescendantOf(game:GetService("Workspace")) then return end
+    return character
 end
 
 local ignored_instances = {}
@@ -691,7 +686,7 @@ local function stepped()
         for _, idx in pairs(mags) do
             idx_sorted[#idx_sorted + 1] = closers_chars[idx]
         end
-        
+
         local function run_aimbot(plr_offset)
             if not options.aimbot then return end
             local char = idx_sorted[plr_offset]
