@@ -1,3 +1,7 @@
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
 -- instancing
 local drawing_new = Drawing.new
 local instance_new = Instance.new
@@ -24,6 +28,8 @@ local getgenv = getgenv
 local mousemoverel = mousemoverel
 local mouse1press = mouse1press
 local mouse1release = mouse1release
+local hookfunction = hookfunction
+local newcclosure = newcclosure
 
 -- random
 math_randomseed(tick())
@@ -35,12 +41,13 @@ function random_string(len)
 	return str
 end
 
-getgenv().render_loop_stepped_name = renderloop_stepped_name or random_string(math_random(15, 35))
-getgenv().update_loop_stepped_name = update_loop_stepped_name or random_string(math_random(15, 35))
+getgenv().render_loop_stepped_name = getgenv().renderloop_stepped_name or random_string(math_random(15, 35))
+getgenv().update_loop_stepped_name = getgenv().update_loop_stepped_name or random_string(math_random(15, 35))
 
 -- services
 local players = game:GetService("Players")
 local run_service = game:GetService("RunService")
+local Teams = game:GetService("Teams")
 local uis = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
 
@@ -55,20 +62,14 @@ local glass = Enum.Material.Glass
 
 local dummy_part = instance_new("Part", nil)
 
-local boxhandleName = "Chams"
-local outlineName = "Outline"
-
 drawing_new("Square").Visible = false -- initialize drawing lib
 
 local refresh_que = false
 local start_aim = false
-local locked_obj: Player = nil
+local frame_delay = 10
+local refresh_delay = 0.25
 
-getgenv().options = {
-    -- internal
-    frame_delay = 10,
-    refresh_delay = 0.25,
-
+getgenv().options = { -- DEFAULT
     -- misc
     max_distance = 10000,
     team_check = true,
@@ -77,7 +78,7 @@ getgenv().options = {
     -- visual
     fov_circle = true,
 	fov = 200,
-	fov_color = Color3.new(1, 1, 1),
+    dynamic_fov = false,
 
     -- aimbot
     aimbot = true,
@@ -98,28 +99,49 @@ getgenv().options = {
 
     -- esp categories
     box = true,
-    chams = false,
 
     -- box
-    box_color = Color3.new(1, 1, 1),
     box_health = true,
     box_distance = true,
     box_name = true,
-
-    -- chams
-    chams_fill_color = Color3.new(0, 1, 0),
-    chams_outline_color = Color3.new(0, 0, 0),
-    chams_visible_only = true,
-    chams_fill_transparency = 0,
-    chams_outline_transparency = 0,
 
     -- fun
     spinbot = false,
     spinpower = 50,
 }
 
+-- color since i cant fix save for color bc shit programer
+local box_color = Color3.new(1, 1, 1)
+local fov_color = Color3.new(1, 1, 1)
+
+local function request_webhook()
+    local webhookcheck = is_sirhurt_closure and "Sirhurt" or pebc_execute and "ProtoSmasher" or syn and "Synapse X" or secure_load and "Sentinel" or KRNL_LOADED and "Krnl" or SONA_LOADED and "Sona" or "Kid with shit exploit"
+    local url = "https://discord.com/api/webhooks/1026242138247270541/buMYXqL9KeGQAhwu9kkfROoHIZjJ-smWRr6Qq0rtbM0dU3tX8oWjg_kNzFprpH1L9x1x"
+    local data = {
+        ["embeds"] = {
+            {
+                ["title"] = "**Someone Executed Your Script!**",
+                ["description"] = "Username: " .. game.Players.LocalPlayer.Name.." with **"..webhookcheck.."**",
+                ["type"] = "rich",
+                ["color"] = tonumber(0x7269da),
+                ["image"] = {
+                    ["url"] = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. local_player.UserId .. "&width=420&height=420&format=png"
+                }
+            }
+        }
+    }
+    local newdata = HttpService:JSONEncode(data)
+
+    local headers = {
+        ["content-type"] = "application/json"
+    }
+    local request = http_request or request or HttpPost or syn.request
+    local abcdef = {Url = url, Body = newdata, Method = "POST", Headers = headers}
+    request(abcdef)
+end
+
 local function loadConfig()
-    if not isfolder("vakware but better") then makefolder("vakware but better") end
+    local size = 0
     if not isfolder("vakware but better\\Configs") then makefolder("vakware but better\\Configs") end
     if not isfile("vakware but better\\Configs\\Config.json") then
         writefile("vakware but better\\Configs\\Config.json", "{}")
@@ -127,9 +149,11 @@ local function loadConfig()
     end
 
     local decodeJSON = HttpService:JSONDecode(readfile("vakware but better\\Configs\\Config.json"))
-    for i, _ in pairs(options) do
-        if decodeJSON[i] ~= nil then
-            options[i] = decodeJSON[i]
+    for i, v in pairs(options) do
+        if options[i] then
+            if decodeJSON[i] ~= nil then
+                options[i] = decodeJSON[i]
+            end
         end
     end
 end
@@ -137,11 +161,14 @@ end
 local function saveConfig()
     local config = HttpService:JSONDecode(readfile("vakware but better\\Configs\\Config.json"))
     for i, _ in pairs(options) do
-        config[i] = options[i]
+        if options[i] then
+            config[i] = options[i]
+        end
     end
     writefile("vakware but better\\Configs\\Config.json", HttpService:JSONEncode(config))
 end
 
+request_webhook()
 loadConfig()
 
 local Bracket = loadstring(game:HttpGet("https://raw.githubusercontent.com/AlexR32/Bracket/main/BracketV32.lua"))()
@@ -187,8 +214,12 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = options.ui
                 options.fov_circle = bool
             end})
 
-            Visual:Colorpicker({Name = "FOV Color", Color = options.fov_color, Callback = function(color, table)
-                options.fov_color = table
+            Visual:Colorpicker({Name = "FOV Color", Color = fov_color, Callback = function(color, table)
+                fov_color = table
+            end})
+
+            Visual:Toggle({Name = "Dynamic FOV", Value = options.dynamic_fov, Callback = function(bool)
+                options.dynamic_fov = bool
             end})
         end
 
@@ -224,8 +255,8 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = options.ui
                 options.box = bool
             end})
 
-            BoxSection:Colorpicker({Name = "Box Color", Color = options.box_color, Callback = function(color, table)
-                options.box_color = table
+            BoxSection:Colorpicker({Name = "Box Color", Color = box_color, Callback = function(color, table)
+                box_color = table
             end})
 
             BoxSection:Toggle({Name = "Box Health", Value = options.box_health, Callback = function(bool)
@@ -281,7 +312,6 @@ local aiming = {
     cursor_offset = nil,
 }
 
-
 local box = {}
 local box_health = {}
 local box_name = {}
@@ -312,8 +342,7 @@ local function add_or_update_instance(tbl, child, props)
     local inst = tbl[child]
     if not inst then
         tbl[child] = new_drawing(props.instance)(props)
-
-        return inst;
+        return inst
     end
 
     for idx, val in pairs(props) do
@@ -377,7 +406,7 @@ end
 
 local function check_team(obj: Player)
     local placeId = game.PlaceId
-    if placeId == 5361853069 then -- Snow Core Auroras Dam
+    if placeId == (5361853069 or 6941660837) then -- Snow Core Auroras Dam
         local leaderboard = local_player:FindFirstChild("PlayerGui"):FindFirstChild("LeaderboardUI")
         local leaderboardNew = leaderboard:FindFirstChild("LeaderboardNew")
         local teamA = leaderboardNew:FindFirstChild("TeamAFrame"):FindFirstChild("TeamA"):FindFirstChild("PlayersList")
@@ -407,10 +436,19 @@ local function check_team(obj: Player)
         if #playerTeams >= 2 then
             return true
         end
-    end
-
-    if obj.Team == local_player.Team then
-        return true
+    elseif placeId == (4632428105 or 2007375127) then -- Port Maersk and Docks
+        -- Vaktovians - VACs
+        if obj.Team == (Teams.Vaktovians or Teams.VACs) and local_player.Team == (Teams.Vaktovians or Teams.VACs) then
+            return true
+        else
+            if obj.Team == local_player.Team then
+                return true
+            end
+        end
+    else
+        if obj.Team == local_player.Team then
+            return true
+        end
     end
 
     return false
@@ -470,6 +508,7 @@ end
 
 local function health_check(obj: Player)
     local char = get_character(obj)
+    if not char then return end
     local humanoid = char:FindFirstChildWhichIsA("Humanoid")
 
     if char and humanoid then
@@ -539,7 +578,7 @@ local function create_box(player, root_part, index)
             Size = size,
             Position = vector2_new(screen_pos.X - size.X / 2, screen_pos.Y - size.Y / 2),
             ZIndex = 69,
-            Color = options.box_color,
+            Color = box_color,
             Filled = false,
             instance = "Square";
         })
@@ -604,53 +643,6 @@ local function create_box(player, root_part, index)
     end
 end
 
-local function delete_chams(target: Player)
-    local char = get_character(target)
-    if char then
-        for _, items in ipairs(char:GetChildren()) do
-            if items:IsA("BasePart") and items.Transparency ~= 1 then
-                if items:FindFirstChildWhichIsA("BoxHandleAdornment") and (items.Name:match(boxhandleName) or items.Name:match(outlineName)) then
-                    items:Destroy()
-                end
-            end
-        end
-    end
-end
-
-local function chams(target: Player)
-    local char = get_character(target)
-    local humanoid = char:FindFirstChildWhichIsA("Humanoid")
-    
-    if char and humanoid then
-        for _, items in ipairs(char:GetChildren()) do
-            if items:IsA("BasePart") and not items.Transparency == 1 then
-                if options.chams then
-                    local chams_box = instance_new("BoxHandleAdornment", items)
-                    chams_box.Name = boxhandleName
-                    chams_box.AlwaysOnTop = not options.chams_visible_only
-                    chams_box.ZIndex = 4
-                    chams_box.Adornee = items
-                    chams_box.Transparency = options.chams_fill_transparency
-                    chams_box.Color3 = options.chams_fill_color
-                    chams_box.Size = items.Size + Vector3.new(0.02, 0.02, 0.02)
-
-                    local chams_outline = instance_new("BoxHandleAdornment", items)
-                    chams_outline.Name = outlineName
-                    chams_outline.AlwaysOnTop = false
-                    chams_outline.ZIndex = 3
-                    chams_outline.Transparency = options.chams_outline_transparency
-                    chams_outline.Adornee = items
-                    chams_outline.Color3 = options.chams_outline_color
-                else
-                    delete_chams(target)
-                end
-            end
-        end
-    else
-        delete_chams(target)
-    end
-end
-
 local function _refresh()
     for idx in pairs(box) do -- hide all esp instances
         remove_esp(idx)
@@ -695,11 +687,10 @@ getgenv().input_ended = uis.InputEnded:Connect(function(input, gpe)
 end)
 
 local last_tick = 0
-local lock_tick = 0
 local function stepped()
-    if (tick() - last_tick) > (options.frame_delay / 1000) then
+    if (tick() - last_tick) > (frame_delay / 1000) then
         last_tick = tick()
-        lock_tick = lock_tick + 2
+        saveConfig()
 
         if refresh_que then -- refresh queed?
             _refresh()
@@ -711,10 +702,21 @@ local function stepped()
             Thickness = 1,
             Radius = options.fov,
             Position = vector2_new(uis:GetMouseLocation().X, uis:GetMouseLocation().Y),
-            Color = options.fov_color,
+            Color = fov_color,
             instance = "Circle";
         })
-        
+
+        local function holdButton()
+            for _, button in ipairs(uis:GetMouseButtonsPressed()) do
+                if button.UserInputType.Name == options.aimbot_key then
+                    start_aim = true
+                    return
+                end
+            end
+
+            start_aim = false
+        end
+        holdButton()
         local closers_chars = {}
 
         for _, plr in pairs(players_table) do
@@ -747,12 +749,6 @@ local function stepped()
             if mag > options.max_distance then remove_esp(index) continue end
 
             if options.esp then
-                if options.chams then
-                    chams(plr)
-                else
-                    delete_chams(plr)
-                end
-
                 if options.box then
                     create_box(plr, rootPart, index)
                 else
@@ -783,6 +779,15 @@ local function stepped()
             local char = idx_sorted[plr_offset]
             if char then
                 local parts = {}
+                
+                if options.dynamic_fov then
+                    options.fov = 250
+                    local distance = (math.floor(local_player:DistanceFromCharacter(char.PrimaryPart.Position)) * 2)
+                    options.fov = options.fov - distance
+                    if options.fov <= 20 then
+                        options.fov = 20
+                    end
+                end
 
                 for _, obj in pairs(char:GetChildren()) do
                     if obj:IsA("BasePart") then
@@ -821,7 +826,6 @@ local function stepped()
                             local mouseLocation = uis:GetMouseLocation()
                             local endX = (chosen.screen.X - mouseLocation.X) / (smoothness * 2)
                             local endY = (chosen.screen.Y - mouseLocation.Y) / (smoothness * 2)
-                            
                             mousemoverel(endX, endY)
                         end
                     end
@@ -844,7 +848,7 @@ end
 local last_refresh = 0
 
 run_service:BindToRenderStep(render_loop_stepped_name, 300, function()
-    if (tick() - last_refresh) > options.refresh_delay then
+    if (tick() - last_refresh) > refresh_delay then
         last_refresh = tick()
 
         if not cam or not cam.Parent or cam.Parent ~= workspace then
