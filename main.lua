@@ -2,6 +2,10 @@ if not game:IsLoaded() then
     game.Loaded:Wait()
 end
 
+if getgenv().roblox_tps_aimbot then
+    return
+end
+
 -- instancing
 local drawing_new = Drawing.new
 local instance_new = Instance.new
@@ -43,6 +47,7 @@ end
 
 getgenv().render_loop_stepped_name = getgenv().renderloop_stepped_name or random_string(math_random(15, 35))
 getgenv().update_loop_stepped_name = getgenv().update_loop_stepped_name or random_string(math_random(15, 35))
+getgenv().roblox_tps_aimbot = true
 
 -- services
 local players = game:GetService("Players")
