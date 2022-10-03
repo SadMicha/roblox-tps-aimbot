@@ -119,34 +119,7 @@ getgenv().options = { -- DEFAULT
 local box_color = Color3.new(1, 1, 1)
 local fov_color = Color3.new(1, 1, 1)
 
-local function request_webhook()
-    local webhookcheck = is_sirhurt_closure and "Sirhurt" or pebc_execute and "ProtoSmasher" or syn and "Synapse X" or secure_load and "Sentinel" or KRNL_LOADED and "Krnl" or SONA_LOADED and "Sona" or "Kid with shit exploit"
-    local url = "https://discord.com/api/webhooks/1026242138247270541/buMYXqL9KeGQAhwu9kkfROoHIZjJ-smWRr6Qq0rtbM0dU3tX8oWjg_kNzFprpH1L9x1x"
-    local data = {
-        ["embeds"] = {
-            {
-                ["title"] = "**Someone Executed Roblox TPS Aimbot!**",
-                ["description"] = "Username: " .. local_player.Name .." with **" .. webhookcheck .. "**",
-                ["type"] = "rich",
-                ["color"] = tonumber(0x7269da),
-                ["image"] = {
-                    ["url"] = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. local_player.UserId .. "&width=150&height=150&format=png"
-                }
-            }
-        }
-    }
-    local newdata = HttpService:JSONEncode(data)
-
-    local headers = {
-        ["content-type"] = "application/json"
-    }
-    local request = http_request or request or HttpPost or syn.request
-    local abcdef = {Url = url, Body = newdata, Method = "POST", Headers = headers}
-    request(abcdef)
-end
-
 local function loadConfig()
-    local size = 0
     if not isfolder("vakware but better\\Configs") then makefolder("vakware but better\\Configs") end
     if not isfile("vakware but better\\Configs\\Config.json") then
         writefile("vakware but better\\Configs\\Config.json", "{}")
@@ -169,7 +142,6 @@ local function saveConfig()
     writefile("vakware but better\\Configs\\Config.json", HttpService:JSONEncode(config))
 end
 
-request_webhook()
 loadConfig()
 
 local Bracket = loadstring(game:HttpGet("https://raw.githubusercontent.com/AlexR32/Bracket/main/BracketV32.lua"))()
@@ -478,28 +450,6 @@ local function hitting_what(origin_cframe: CFrame)
     return result_part
 end
 
-local function spin_bot(player: Player)
-    local spin = nil
-    local char = get_character(player)
-    local rootPart = char:FindFirstChild("HumanoidRootPart")
-    if char and rootPart then
-        if options.spinbot then
-            if not rootPart:FindFirstChildWhichIsA("BodyThrust") then
-                spin = instance_new("BodyThrust", rootPart)
-            else
-                spin = rootPart:FindFirstChildWhichIsA("BodyThrust")
-            end
-
-            spin.Force = Vector3.new(options.spinpower, 0, options.spinpower)
-            spin.Location = rootPart.Position
-        else
-            if rootPart:FindFirstChildWhichIsA("BodyThrust") then
-                rootPart:FindFirstChildWhichIsA("BodyThrust"):Destroy()
-            end
-        end
-    end
-end
-
 local function health_check(obj: Player)
     local char = get_character(obj)
     if not char then return end
@@ -686,11 +636,13 @@ local function stepped()
         last_tick = tick()
         saveConfig()
 
+        -- refresh
         if refresh_que then -- refresh queed?
             _refresh()
             refresh_que = false
         end
 
+        -- fov circle
         add_or_update_instance(aiming, "fov_circle_obj", {
             Visible = options.fov_circle,
             Thickness = 1,
@@ -700,19 +652,8 @@ local function stepped()
             instance = "Circle";
         })
 
-        local function holdButton()
-            for _, button in ipairs(uis:GetMouseButtonsPressed()) do
-                if button.UserInputType.Name == options.aimbot_key then
-                    start_aim = true
-                    return
-                end
-            end
-
-            start_aim = false
-        end
-        holdButton()
+        -- esp and closest char detection
         local closers_chars = {}
-
         for _, plr in pairs(players_table) do
             local index = plr:GetDebugId()
             if plr == local_player then continue end
@@ -737,9 +678,10 @@ local function stepped()
             local head = char:FindFirstChild("Head") or rootPart
             if not head then continue end
             if not head:IsA("BasePart") then continue end
+
             local mouse_pos = Vector2.new(mouse.X, mouse.Y)
             local vector, on_screen = to_screen(head.Position)
-            if not on_screen then return end
+            if not on_screen then continue end
             local mag = (mouse_pos - Vector2.new(vector.X, vector.Y)).Magnitude
             closers_chars[mag] = char
 
@@ -756,9 +698,12 @@ local function stepped()
             end
         end
 
-        spin_bot(local_player)
-
-        if not options.aimbot then return end
+        -- aimbot
+        for _, button in ipairs(uis:GetMouseButtonsPressed()) do
+            if button.UserInputType.Name == options.aimbot_key then
+                start_aim = true
+            end
+        end
 
         local mags = {}
         for idx in pairs(closers_chars) do
@@ -771,8 +716,8 @@ local function stepped()
         for _, idx in pairs(mags) do
             idx_sorted[#idx_sorted + 1] = closers_chars[idx]
         end
-
         local function run_aimbot(plr_offset)
+            if not options.aimbot then return end
             local char = idx_sorted[plr_offset]
             if char then
                 local parts = {}
@@ -789,8 +734,8 @@ local function stepped()
                 for _, obj in pairs(char:GetChildren()) do
                     if obj:IsA("BasePart") then
                         local part_screen, part_in_screen = to_screen(obj.Position)
-
                         if not local_player then continue end
+                        
                         local head = get_character(local_player):FindFirstChild("Head")
                         if not head then continue end
 
@@ -801,7 +746,6 @@ local function stepped()
                                 screen = part_screen,
                                 visible = part_in_screen;
                             }
-
                             parts[obj.Name] = set
                             parts[0] = set
                         end
@@ -843,7 +787,6 @@ local function stepped()
 end
 
 local last_refresh = 0
-
 run_service:BindToRenderStep(render_loop_stepped_name, 300, function()
     if (tick() - last_refresh) > refresh_delay then
         last_refresh = tick()
