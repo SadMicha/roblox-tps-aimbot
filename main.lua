@@ -109,10 +109,6 @@ getgenv().options = { -- DEFAULT
     box_health = true,
     box_distance = true,
     box_name = true,
-
-    -- fun
-    spinbot = false,
-    spinpower = 50,
 }
 
 -- color since i cant fix save for color bc shit programer
@@ -239,27 +235,6 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = options.ui
             BoxSection:Toggle({Name = "Box Name", Value = options.box_name, Callback = function(bool)
                 options.box_name = bool
             end})
-        end
-    end
-
-    -- fun
-    local Fun = Window:Tab({Name = "Fun"}) do
-        Fun:Divider({Text = "Global", Side = "Right"})
-        local GlobalSection = Fun:Section({Name = "Global", Side = "Right"}) do
-            GlobalSection:Toggle({Name = "Spin Bot", Value = options.spinbot, Callback = function(bool)
-                options.spinbot = bool
-            end})
-            GlobalSection:Slider({Name = "Spin Power", Min = 0, Max = 100, Value = options.spinpower, Precise = 1, Unit = "", Callback = function(number)
-                options.spinpower = number
-            end})
-        end
-        Fun:Divider({Text = "Vaktovia", Side = "Left"})
-        local Vaktovia = Fun:Section({Name = "Vaktovia", Side = "Left"}) do
-            
-        end
-        Fun:Divider({Text = "Snow Core", Side = "Left"})
-        local SnowCore = Fun:Section({Name = "Snow Core", Side = "Left"}) do
-            
         end
     end
 
