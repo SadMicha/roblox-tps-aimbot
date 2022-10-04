@@ -152,7 +152,7 @@ local Window = Bracket:Window({Name = "vakware but better", Enabled = options.ui
             end}):Keybind({Key = options.aimbot_toggle_key, Mouse = false, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(bool, key)
                 options.aimbot_toggle_key = key
             end}):SetValue(options.aimbot_toggle_key)
-            
+
             SettingSection:Keybind({Name = "Aimbot Key", Key = options.aimbot_key, Mouse = true, Blacklist = {"W","A","S","D","Slash","Tab","Backspace","Escape","Space","Delete","Unknown","Backquote"}, Callback = function(key, bool)
                 options.aimbot_key = key
             end}):SetValue(options.aimbot_key)
@@ -484,7 +484,7 @@ local function create_box(player, root_part, index)
     local scale_factor = 1 / (screen_pos.Z * math.tan(math.rad(cam.FieldOfView * 0.5)) * 2) * 100
     local width, height = math.floor(40 * scale_factor), math.floor(60 * scale_factor)
     local size = vector2_new(width, height)
-    
+
     if is_visible then
         add_or_update_instance(box, index, {
             Visible = options.box,
@@ -570,11 +570,11 @@ local function refresh()
 end
 
 -- player events
-getgenv().player_added = players.ChildAdded:Connect(refresh)
-getgenv().player_removed = players.ChildRemoved:Connect(refresh)
+players.ChildAdded:Connect(refresh)
+players.ChildRemoved:Connect(refresh)
 
 -- aimbot triggers
-getgenv().input_began = uis.InputBegan:Connect(function(input, gpe)
+uis.InputBegan:Connect(function(input, gpe)
     if gpe then return end
     if (input.UserInputType.Name == options.aimbot_key or input.KeyCode.Name == options.aimbot_key) then
 		start_aim = true
@@ -593,7 +593,7 @@ getgenv().input_began = uis.InputBegan:Connect(function(input, gpe)
     end
 end)
 
-getgenv().input_ended = uis.InputEnded:Connect(function(input, gpe)
+uis.InputEnded:Connect(function(input, gpe)
     if gpe then return end
     if (input.UserInputType.Name == options.aimbot_key or input.KeyCode.Name == options.aimbot_key) then
         start_aim = false
@@ -650,7 +650,7 @@ local function stepped()
             if not head:IsA("BasePart") then continue end
             local visual_mag = (head.Position - mouse.Hit.Position).Magnitude
             if visual_mag > options.max_distance then remove_esp(index) continue end
-            
+
             local mouse_pos = uis:GetMouseLocation()
             local vector, on_screen = to_screen(head.Position)
             if not on_screen then continue end
@@ -692,7 +692,7 @@ local function stepped()
             local char = idx_sorted[plr_offset]
             if char then
                 local parts = {}
-                
+
                 if options.dynamic_fov then
                     options.fov = 250
                     local distance = (math.floor(local_player:DistanceFromCharacter(char.PrimaryPart.Position)) * 2)
@@ -706,7 +706,7 @@ local function stepped()
                     if obj:IsA("BasePart") then
                         local part_screen, part_in_screen = to_screen(obj.Position)
                         if not local_player then continue end
-                        
+
                         local head = get_character(local_player):FindFirstChild("Head")
                         if not head then continue end
 
